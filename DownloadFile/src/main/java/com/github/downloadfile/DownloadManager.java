@@ -1,15 +1,10 @@
 package com.github.downloadfile;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.text.TextUtils;
-
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-public class DownloadImage {
+public class DownloadManager {
     public static void test(String imageUrl){
         try {
             URL url = new URL(imageUrl);
