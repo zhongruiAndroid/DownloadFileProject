@@ -87,10 +87,6 @@ public class DownloadConfig implements Serializable {
             }
             DownloadConfig downloadConfig = new DownloadConfig();
 
-            String name = config.getSaveFile().getName();
-            String substring = name.substring(0, name.lastIndexOf("."));
-
-            downloadConfig.setTempSaveFile(new File(config.getSaveFile().getParent(),substring+".temp"));
             downloadConfig.setSaveFile(config.getSaveFile());
             downloadConfig.setFileDownloadUrl(config.getFileDownloadUrl());
             downloadConfig.setUseSourceName(config.isUseSourceName());
@@ -110,14 +106,17 @@ public class DownloadConfig implements Serializable {
 
     public void setSaveFile(File saveFile) {
         this.saveFile = saveFile;
+        createTempSaveFileBySaveFile(saveFile);
     }
 
     public File getTempSaveFile() {
         return tempSaveFile;
     }
 
-    public void setTempSaveFile(File tempSaveFile) {
-        this.tempSaveFile = tempSaveFile;
+    public void createTempSaveFileBySaveFile(File saveFile) {
+        String name = saveFile.getName();
+        String substring = name.substring(0, name.lastIndexOf("."));
+        this.tempSaveFile = new File(saveFile.getParent(),substring+".temp");
     }
 
     public boolean isIfExistAgainDownload() {
