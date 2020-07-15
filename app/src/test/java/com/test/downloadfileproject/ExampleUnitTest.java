@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
 
@@ -29,28 +30,26 @@ public class ExampleUnitTest {
         System.out.println(url2.hashCode()& Integer.MAX_VALUE);
     }
     @Test
+    public void adsddf() throws IOException {
+//        String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
+        String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk";
+        System.out.println(url.split("\\?")[0]);
+    }
+    @Test
     public void asddf() throws IOException {
-        File file=new File("f:/a/b/c.txt");
-        System.out.println(file.getParent());
-        String name = file.getName();
-        System.out.println(name);
-
-        String replace = name.replace("\\.", "(" + 1 + ")\\.");
-        System.out.println(replace);
-      /*  if(!file.getParentFile().exists()){
-            file.getParentFile().mkdirs();
-        }*/
-//        file.createNewFile();
+        File file=new File("f:/a/b/ccc.txt");
         boolean delete = file.delete();
-        System.out.println(delete);
-        /*System.out.println(file.getName());
-        System.out.println(file.getPath());
-        System.out.println(file.getAbsolutePath());
-        String absolutePath = file.getAbsolutePath();
-        int i = absolutePath.lastIndexOf("\\");
-        String substring = absolutePath.substring(i  );
-        String substring2 = absolutePath.substring(i);
-        System.out.println(substring);
-        System.out.println(substring2);*/
+
+        System.out.println(delete );
+        System.out.println("==========d===========");
+
+
+    }
+    @Test
+    public void adasfdsddf() throws IOException {
+        AtomicBoolean atomicBoolean=new AtomicBoolean(true);
+        System.out.println(atomicBoolean.get());
+        System.out.println(atomicBoolean.getAndSet(false));
+        System.out.println(atomicBoolean.get());
     }
 }

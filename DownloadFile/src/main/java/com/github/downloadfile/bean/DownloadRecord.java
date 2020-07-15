@@ -1,9 +1,10 @@
 package com.github.downloadfile.bean;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadRecord {
+public class DownloadRecord implements Serializable {
     private List<FileRecord> fileRecordList;
 
     public List<FileRecord> getFileRecordList() {
@@ -19,8 +20,14 @@ public class DownloadRecord {
     public void setFileRecordList(List<FileRecord> fileRecordList) {
         this.fileRecordList = fileRecordList;
     }
-
-    public static class FileRecord{
+    public FileRecord getSingleDownloadRecord(){
+        if(getFileRecordList().isEmpty()){
+            FileRecord record = new FileRecord();
+            getFileRecordList().add(record);
+        }
+        return getFileRecordList().get(0);
+    }
+    public static class FileRecord  implements Serializable {
         /*片段起始点*/
         private int startPoint;
         /*片段截止点*/

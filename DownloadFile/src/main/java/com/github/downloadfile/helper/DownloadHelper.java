@@ -3,7 +3,15 @@ package com.github.downloadfile.helper;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,13 +49,25 @@ public class DownloadHelper {
     }
 
     public static void close(Closeable closeable) {
-        if(closeable==null){
+        if (closeable == null) {
             return;
         }
         try {
             closeable.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    public static void flush(Flushable flushable) {
+        if (flushable == null) {
+            return;
+        }
+        try {
+            flushable.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
