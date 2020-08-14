@@ -69,5 +69,13 @@ public class DownloadHelper {
         }
     }
 
+    public static void deleteFile(File file){
+        if(file==null){
+            return;
+        }
+        if(file.isFile()){
+            file.delete();
+        }
+    }
 
 }

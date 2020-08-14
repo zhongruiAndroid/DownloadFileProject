@@ -1,7 +1,9 @@
 package com.test.downloadfileproject;
 
 
+import android.Manifest;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -28,7 +30,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt:
-                start();
+//                start();
+                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
+                        Manifest.permission.READ_PHONE_STATE},10001);
+                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE},100);
+                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION},102);
                 break;
         }
     }

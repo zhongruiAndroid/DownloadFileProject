@@ -23,7 +23,7 @@ public class DownloadConfig implements Serializable {
     private boolean useSourceName;
 
     /*单个任务多线程下载数量*/
-    private int threadNum=3;
+    private int threadNum=1;
 
     protected DownloadConfig() {
     }
@@ -82,7 +82,7 @@ public class DownloadConfig implements Serializable {
                     fileDownloadUrl=fileDownloadUrl.split("\\?")[0];
                     int index = fileDownloadUrl.lastIndexOf(".");
                     String suffix = fileDownloadUrl.substring(index);
-                    String fileName = MD5Coder.encode(fileDownloadUrl) + suffix;
+                    String fileName = MD5Coder.encode(fileDownloadUrl).substring(8, 24) + suffix;
                     if (config.isUseSourceName()) {
                         index = fileDownloadUrl.lastIndexOf("/");
                         fileName = fileDownloadUrl.substring(index);

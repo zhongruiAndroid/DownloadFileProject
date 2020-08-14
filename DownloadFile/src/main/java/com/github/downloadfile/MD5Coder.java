@@ -39,7 +39,6 @@ public class MD5Coder {
             return null;
         }
     }
-
     public static String encode(String str) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
