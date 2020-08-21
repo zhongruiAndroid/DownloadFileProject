@@ -7,6 +7,7 @@ import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.DownloadListener;
 import com.github.downloadfile.listener.SerializableCacheFileListener;
+import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -17,6 +18,7 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadInfo {
@@ -25,7 +27,6 @@ public class DownloadInfo {
     private DownloadConfig downloadConfig;
     private DownloadRecord downloadRecord;
     private AtomicInteger multiCompleteNum;
-    private ObjectOutputStream outputStream;
     private long startTime;
 
     public DownloadInfo(DownloadConfig config, DownloadListener listener) {
@@ -162,22 +163,28 @@ public class DownloadInfo {
 
 
                     /*读取本地缓存配置*/
-                    downloadRecord = SerializeUtils.toObjectSyn(downloadConfig.getCacheRecordFile());
-                    if (downloadRecord == null) {
+                    downloadRecord = DownloadHelper.get().getRecord(fileUrl.hashCode()+"");
+                    Log.i("=====","=====toJson="+downloadRecord.toJson());
+                    if(false){
+                        return;
+                    }
+                    if (downloadRecord == null||downloadRecord.getFileSize()<=0) {
                         //如果用户手动删除了配置缓存文件，则重新下载
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
-                        downloadRecord = new DownloadRecord(contentLength, threadNum);
+                        downloadRecord = new DownloadRecord(contentLength, fileUrl);
+                        downloadRecord.setThreadNum(threadNum);
 
 
                     } else if (downloadRecord != null && downloadRecord.getFileSize() != contentLength) {
                         /*如果下载的文件大小和缓存的配置大小不一致，重新下载*/
 
                         /*删除配置缓存*/
-                        DownloadHelper.deleteFile(downloadConfig.getCacheRecordFile());
+//                        DownloadHelper.deleteFile(downloadConfig.getCacheRecordFile());
                         /*删除需要下载的文件缓存*/
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
 
-                        downloadRecord = new DownloadRecord(contentLength, threadNum);
+                        downloadRecord = new DownloadRecord(contentLength,fileUrl);
+                        downloadRecord.setThreadNum(threadNum);
                     }
 
                     /*多线程下载*/
@@ -216,16 +223,11 @@ public class DownloadInfo {
         startTime = System.currentTimeMillis();
         /*如果重新下载，忽略之前的下载进度*/
         if (downloadConfig.isReDownload()) {
-            downloadConfig.getCacheRecordFile().delete();
+            DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl().hashCode()+"");
         }
 
         int threadNum = downloadConfig.getThreadNum();
-        try {
-            outputStream = new ObjectOutputStream(new FileOutputStream(downloadConfig.getCacheRecordFile()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+       final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         for (int i = 0; i < threadNum; i++) {
             final int finalI = i;
             final DownloadRecord.FileRecord record = downloadRecord.getFileRecordList().get(finalI);
@@ -236,14 +238,15 @@ public class DownloadInfo {
                     if (downloadLength > 0) {
                         downloadLength -= 1;
                     }
-                    startMultiDownload(finalI, record.getStartPoint() + downloadLength, record.getEndPoint() );
+                    DownloadRecord.FileRecord fileRecord = fileRecordList.get(finalI);
+                    startMultiDownload(fileRecord,finalI, record.getStartPoint() + downloadLength, record.getEndPoint() );
                 }
             });
         }
     }
 
 
-    private void startMultiDownload(int index, long startPoint, long endPoint ) {
+    private void startMultiDownload(DownloadRecord.FileRecord record,int index, long startPoint, long endPoint ) {
         HttpURLConnection httpURLConnection = null;
         InputStream inputStream = null;
         // 随机访问文件，可以指定断点续传的起始位置
@@ -251,7 +254,7 @@ public class DownloadInfo {
         RandomAccessFile randomAccessFile = null;
 
 
-        DownloadRecord.FileRecord record = downloadRecord.getFileRecordList().get(index);
+//        DownloadRecord.FileRecord record = downloadRecord.getFileRecordList().get(index);
         if (record == null) {
             Log.i("====", "=========record==null");
             error();
@@ -279,12 +282,14 @@ public class DownloadInfo {
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
                 randomAccessFile = new RandomAccessFile(targetFile, "rwd");
-                randomAccessFile.seek(record.getStartPoint() + record.getDownloadLength());
+                randomAccessFile.seek(startPoint);
+                long downloadLength;
                 while ((len = bis.read(buff)) != -1) {
                     randomAccessFile.write(buff, 0, len);
-                    record.setDownloadLength(record.getDownloadLength() + len);
+                    downloadLength = record.getDownloadLength();
+                    record.setDownloadLength( downloadLength+ len);
 
-//                    writeCacheFile(downloadRecord);
+                    DownloadHelper.get().saveRecord(downloadRecord);
 //                    Log.i("=====",index+"====="+new Gson().toJson(downloadRecord));
                 }
                 int num = multiCompleteNum.incrementAndGet();
@@ -293,7 +298,7 @@ public class DownloadInfo {
                     long endTime = System.currentTimeMillis();
                     Log.i("=====","===========time:"+(endTime-startTime)/1000L);
                     downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
-                    downloadConfig.getCacheRecordFile().delete();
+                    DownloadHelper.get().clearRecord(downloadRecord.getUniqueId());
                 }
                 success(downloadConfig.getSaveFile());
             } else {
@@ -307,8 +312,6 @@ public class DownloadInfo {
             DownloadHelper.close(bis);
             DownloadHelper.close(inputStream);
             if(multiCompleteNum.get()== downloadConfig.getThreadNum()){
-                DownloadHelper.flush(outputStream);
-                DownloadHelper.close(outputStream);
             }
             if (httpURLConnection != null) {
                 httpURLConnection.disconnect();
@@ -316,31 +319,25 @@ public class DownloadInfo {
         }
     }
 
-    private synchronized void writeCacheFile(DownloadRecord downloadRecord) throws IOException {
-        outputStream = new ObjectOutputStream(new FileOutputStream(downloadConfig.getCacheRecordFile()));
-        outputStream.writeObject(downloadRecord);
-        outputStream.flush();
-        outputStream.close();
-    }
 
     /*可以单线程下载*/
     private void canSingleDownload(boolean canRangeDownload) {
         /*如果重新下载，忽略之前的下载进度*/
         if (downloadConfig.isReDownload()) {
-            downloadConfig.getCacheRecordFile().delete();
+//            downloadConfig.getCacheRecordFile().delete();
         }
-        if (!downloadConfig.getCacheRecordFile().getParentFile().exists()) {
-            downloadConfig.getCacheRecordFile().getParentFile().mkdirs();
-        }
+//        if (!downloadConfig.getCacheRecordFile().getParentFile().exists()) {
+//            downloadConfig.getCacheRecordFile().getParentFile().mkdirs();
+//        }
         /*读取本地缓存配置*/
-        downloadRecord = SerializeUtils.toObjectSyn(downloadConfig.getCacheRecordFile());
-        if (downloadRecord == null) {
+        downloadRecord = DownloadHelper.get().getRecord(downloadConfig.getFileDownloadUrl().hashCode()+"");
+        if (downloadRecord == null||downloadRecord.getFileSize()<=0) {
             /*重新下载*/
             File tempSaveFile = downloadConfig.getTempSaveFile();
             if (tempSaveFile != null) {
                 tempSaveFile.delete();
             }
-            downloadRecord = new DownloadRecord(1, 1);
+            downloadRecord = new DownloadRecord(1, downloadConfig.getFileDownloadUrl());
             DownloadRecord.FileRecord record = new DownloadRecord.FileRecord();
             downloadRecord.addFileRecordList(record);
         }
@@ -388,13 +385,12 @@ public class DownloadInfo {
 //                    downloadRecord.getSingleDownloadRecord().setDownloadLength(downloadRecord.getSingleDownloadRecord().getDownloadLength() + len);
 
                     //下载的进度同时缓存至本地
-                    out = new ObjectOutputStream(new FileOutputStream(downloadConfig.getCacheRecordFile()));
-                    out.writeObject(downloadRecord);
+//                    out = new ObjectOutputStream(new FileOutputStream(downloadConfig.getCacheRecordFile()));
+//                    out.writeObject(downloadRecord);
 
                 }
 
                 downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
-                downloadConfig.getCacheRecordFile().delete();
                 success(downloadConfig.getSaveFile());
             } else {
                 error();

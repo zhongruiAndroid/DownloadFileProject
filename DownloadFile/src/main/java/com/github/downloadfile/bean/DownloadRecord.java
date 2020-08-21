@@ -1,5 +1,8 @@
 package com.github.downloadfile.bean;
 
+import android.net.Uri;
+import android.text.TextUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,10 +14,12 @@ import java.util.List;
 public class DownloadRecord implements Serializable {
     private long fileSize;
     private List<FileRecord> fileRecordList;
+    private String uniqueId;
 
-    public DownloadRecord(long fileSize,int threadNum) {
+    public DownloadRecord(long fileSize,String fileUrl) {
         this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
+        this.uniqueId=fileUrl.hashCode()+"";
     }
     public void setThreadNum(int threadNum){
         long average = fileSize / threadNum;
@@ -34,6 +39,13 @@ public class DownloadRecord implements Serializable {
     }
     public long getFileSize() {
         return fileSize;
+    }
+
+    public String getUniqueId() {
+        if(TextUtils.isEmpty(uniqueId)){
+            uniqueId="";
+        }
+        return uniqueId;
     }
 
     public synchronized List<FileRecord> getFileRecordList() {
@@ -98,13 +110,18 @@ public class DownloadRecord implements Serializable {
                 '}';
     }
 
-    public DownloadRecord fromJson(String json) {
+    public static DownloadRecord fromJson(String json) {
         DownloadRecord downloadRecord;
+        if(TextUtils.isEmpty(json)){
+            downloadRecord=new DownloadRecord(0,"");
+            return downloadRecord;
+        }
         try {
             JSONObject jsonObject=new JSONObject(json);
             long fileSize = jsonObject.optLong("fileSize");
+            String fileUrl = jsonObject.optString("fileUrl");
             JSONArray fileRecordList = jsonObject.optJSONArray("fileRecordList");
-            downloadRecord=new DownloadRecord(fileSize,fileRecordList.length());
+            downloadRecord=new DownloadRecord(fileSize,fileUrl);
             downloadRecord.fileSize=fileSize;
             if(fileRecordList!=null&&fileRecordList.length()>0){
                 for (int i = 0; i < fileRecordList.length(); i++) {
@@ -118,7 +135,7 @@ public class DownloadRecord implements Serializable {
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            downloadRecord=new DownloadRecord(1,1);
+            downloadRecord=new DownloadRecord(0,"");
         }
         return downloadRecord;
     }
@@ -126,6 +143,7 @@ public class DownloadRecord implements Serializable {
         JSONObject jsonObject=new JSONObject();
         try {
             jsonObject.put("fileSize",getFileSize());
+            jsonObject.put("fileUrl",getUniqueId());
             JSONArray jsonArray=new JSONArray();
             for (FileRecord fileRecord : getFileRecordList()) {
                 JSONObject itemJson=new JSONObject();
@@ -139,12 +157,5 @@ public class DownloadRecord implements Serializable {
             e.printStackTrace();
         }
         return jsonObject.toString();
-    }
-    public static void saveData() {
-
-    }
-
-    public static void getData() {
-
     }
 }

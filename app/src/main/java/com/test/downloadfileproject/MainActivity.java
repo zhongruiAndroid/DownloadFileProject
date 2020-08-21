@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     public void addddsf(){
-        downloadRecord = new DownloadRecord(30000, 3);
+        downloadRecord = new DownloadRecord(30000,"");
         downloadRecord.setThreadNum(3);
         for (DownloadRecord.FileRecord fileRecord: downloadRecord.getFileRecordList()) {
             fileRecord.setStartPoint(0);
@@ -77,19 +77,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt:
-                if(true){
+                if(false){
                     addddsf();
                     return;
                 }
-//                start();
-                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
-                        Manifest.permission.READ_PHONE_STATE},10001);
-                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE},100);
-                ActivityCompat.requestPermissions(MainActivity.this,new String[]{
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION},102);
+                start();
+
                 break;
         }
     }

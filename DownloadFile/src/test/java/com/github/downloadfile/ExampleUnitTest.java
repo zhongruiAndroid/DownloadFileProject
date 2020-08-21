@@ -26,8 +26,13 @@ public class ExampleUnitTest {
     }
     private AtomicReference<DownloadRecord> atomicReference;
     @Test
+    public void adddd2sf(){
+        String u="";
+        System.out.println(u.hashCode());
+    }
+    @Test
     public void addddsf(){
-        DownloadRecord downloadRecord = new DownloadRecord(30000, 3);
+        DownloadRecord downloadRecord = new DownloadRecord(30000, "");
         for (DownloadRecord.FileRecord fileRecord:downloadRecord.getFileRecordList()) {
             fileRecord.setStartPoint(0);
         }

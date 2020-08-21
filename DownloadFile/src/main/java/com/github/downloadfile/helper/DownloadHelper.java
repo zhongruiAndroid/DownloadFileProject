@@ -1,23 +1,24 @@
 package com.github.downloadfile.helper;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
-import java.io.BufferedInputStream;
+import com.github.downloadfile.DownloadManager;
+import com.github.downloadfile.bean.DownloadRecord;
+
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Flushable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DownloadHelper {
     /**********************************************************/
     private static DownloadHelper singleObj;
+    private SharedPreferences sp;
 
     private DownloadHelper() {
         handler = new Handler(Looper.getMainLooper());
@@ -58,6 +59,7 @@ public class DownloadHelper {
             e.printStackTrace();
         }
     }
+
     public static void flush(Flushable flushable) {
         if (flushable == null) {
             return;
@@ -69,13 +71,38 @@ public class DownloadHelper {
         }
     }
 
-    public static void deleteFile(File file){
-        if(file==null){
+    public static void deleteFile(File file) {
+        if (file == null) {
             return;
         }
-        if(file.exists()&&file.isFile()){
+        if (file.exists() && file.isFile()) {
             file.delete();
         }
     }
 
+    private final String sp_file_name = "multi_download_sp";
+
+    public DownloadRecord getRecord(String uniqueId) {
+        SharedPreferences sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+        String downloadRecord = sp.getString(uniqueId, null);
+        return DownloadRecord.fromJson(downloadRecord);
+    }
+
+    public void saveRecord(DownloadRecord downloadRecord) {
+        if(downloadRecord==null){
+            return;
+        }
+        String json = downloadRecord.toJson();
+        String key = downloadRecord.getUniqueId();
+        if(sp==null){
+            sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+        }
+        sp.edit().putString(key,json).apply();
+    }
+    public void clearRecord(String uniqueId) {
+        if(sp==null){
+            sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+        }
+        sp.edit().remove(uniqueId).commit();
+    }
 }

@@ -12,8 +12,6 @@ public class DownloadConfig implements Serializable {
     private File saveFile;
     /*下载中的文件*/
     private File tempSaveFile;
-    /*需要缓存下载信息的文件*/
-    private File cacheRecordFile;
     /*重新下载，忽略之前下载的进度*/
     private boolean reDownload;
     private boolean ifExistAgainDownload;
@@ -121,9 +119,6 @@ public class DownloadConfig implements Serializable {
         return tempSaveFile;
     }
 
-    public File getCacheRecordFile() {
-        return cacheRecordFile;
-    }
 
     public void createTempSaveFileBySaveFile(File saveFile) {
         String name = saveFile.getName();
@@ -133,7 +128,6 @@ public class DownloadConfig implements Serializable {
     public void createRecordFileBySaveFile(File saveFile) {
         String name = saveFile.getName();
         String substring = name.substring(0, name.lastIndexOf("."));
-        this.cacheRecordFile = new File(saveFile.getParent(),substring+".record");
     }
 
     public boolean isReDownload() {
