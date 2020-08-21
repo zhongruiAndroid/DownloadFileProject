@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.Serializable;
 
 public class DownloadConfig implements Serializable {
-    /*下载地址*/
-    private String downloadUrl;
     /*下次成功的文件*/
     private File saveFile;
     /*下载中的文件*/
@@ -19,6 +17,7 @@ public class DownloadConfig implements Serializable {
     /*重新下载，忽略之前下载的进度*/
     private boolean reDownload;
     private boolean ifExistAgainDownload;
+    /*下载地址*/
     private String fileDownloadUrl;
     private boolean useSourceName;
 
@@ -31,16 +30,10 @@ public class DownloadConfig implements Serializable {
     public static class Builder {
         private String downloadFilePath;
         private DownloadConfig config;
-
-        public Builder() {
+        private Context context;
+        public Builder( ) {
+            context=DownloadManager.getContext();
             config = new DownloadConfig();
-        }
-
-        public Builder(Context context) {
-            config = new DownloadConfig();
-            if (context == null) {
-                return;
-            }
             boolean sdCardCanReadAndWrite = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
             File useDownloadFile = context.getExternalFilesDir("download");
             if (sdCardCanReadAndWrite && useDownloadFile != null) {
@@ -109,13 +102,6 @@ public class DownloadConfig implements Serializable {
         }
     }
 
-    public String getDownloadUrl() {
-        return downloadUrl;
-    }
-
-    public void setDownloadUrl(String downloadUrl) {
-        this.downloadUrl = downloadUrl;
-    }
 
     public File getSaveFile() {
         return saveFile;

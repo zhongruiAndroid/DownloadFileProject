@@ -7,7 +7,6 @@ import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.DownloadListener;
 import com.github.downloadfile.listener.SerializableCacheFileListener;
-import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -18,17 +17,13 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.CompletionHandler;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static java.lang.System.out;
 
 public class DownloadInfo {
     private int fileSize;
     private DownloadListener downloadListener;
-    private volatile DownloadConfig downloadConfig;
-    private volatile DownloadRecord downloadRecord;
+    private DownloadConfig downloadConfig;
+    private DownloadRecord downloadRecord;
     private AtomicInteger multiCompleteNum;
     private ObjectOutputStream outputStream;
     private long startTime;
@@ -117,7 +112,7 @@ public class DownloadInfo {
             error();
             return;
         }
-        downloadConfig.setDownloadUrl(fileUrl);
+        downloadConfig.setFileDownloadUrl(fileUrl);
         File saveFile = downloadConfig.getSaveFile();
         /*如果存在已下载完成的文件*/
         if (saveFile != null && saveFile.exists() && saveFile.isFile()) {
@@ -237,7 +232,7 @@ public class DownloadInfo {
             DownloadHelper.get().getExecutorService().execute(new Runnable() {
                 @Override
                 public void run() {
-                    int downloadLength = record.getDownloadLength();
+                    long downloadLength = record.getDownloadLength();
                     if (downloadLength > 0) {
                         downloadLength -= 1;
                     }
@@ -248,7 +243,7 @@ public class DownloadInfo {
     }
 
 
-    private void startMultiDownload(int index, int startPoint, int endPoint ) {
+    private void startMultiDownload(int index, long startPoint, long endPoint ) {
         HttpURLConnection httpURLConnection = null;
         InputStream inputStream = null;
         // 随机访问文件，可以指定断点续传的起始位置
@@ -263,7 +258,7 @@ public class DownloadInfo {
             return;
         }
         try {
-            URL url = new URL(downloadConfig.getDownloadUrl());
+            URL url = new URL(downloadConfig.getFileDownloadUrl());
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);
@@ -372,7 +367,7 @@ public class DownloadInfo {
 
         ObjectOutputStream out = null;
         try {
-            URL url = new URL(downloadConfig.getDownloadUrl());
+            URL url = new URL(downloadConfig.getFileDownloadUrl());
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);

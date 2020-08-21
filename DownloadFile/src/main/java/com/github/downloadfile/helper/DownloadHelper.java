@@ -73,7 +73,7 @@ public class DownloadHelper {
         if(file==null){
             return;
         }
-        if(file.isFile()){
+        if(file.exists()&&file.isFile()){
             file.delete();
         }
     }

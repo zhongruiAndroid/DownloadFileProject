@@ -35,6 +35,13 @@ public class ExampleUnitTest {
         assertEquals(4, 2 + 2);
     }
 
+
+    @Test
+    public void as1df() {
+        File file=new File("f:/a/a/","a.txt");
+//        File file=new File("f:/a/a/a.txt");
+        System.out.println(file.exists());
+    }
     @Test
     public void asdf() {
         String url = "http://vfx.mtime.cn/Video/2019/03/19/mp4/190319222227698228.mp4";
@@ -56,12 +63,27 @@ public class ExampleUnitTest {
 
 
 
+    @Test
     public void asddf() throws IOException {
-        File file = new File("f:/a/b/ccc.txt");
-        boolean delete = file.delete();
-
-        System.out.println(delete);
+        System.out.println(true||false&&false);
+        System.out.println(String.format("%.3f",3.1414));
+        File file = new File("f:/a/b2/ccc.txt" );
+        System.out.println(file.getName());
+        boolean b = file.renameTo(new File("f:/a/b2","a.txt"));
+        System.out.println(b);
+        if (true){
+            return;
+        }
+        System.out.println(file.isFile());
+        System.out.println(file.isDirectory());
+        if(!file.getParentFile().exists()){
+            file.getParentFile().mkdirs();
+            System.out.println("==========d=====1======");
+        }
+        System.out.println(file.createNewFile());
         System.out.println("==========d===========");
+        System.out.println(file.isFile());
+
 
 
     }

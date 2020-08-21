@@ -1,9 +1,16 @@
 package com.github.downloadfile;
 
+import android.os.SystemClock;
+import android.util.Log;
+
+import com.github.downloadfile.bean.DownloadRecord;
+
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
@@ -16,6 +23,51 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+    private AtomicReference<DownloadRecord> atomicReference;
+    @Test
+    public void addddsf(){
+        DownloadRecord downloadRecord = new DownloadRecord(30000, 3);
+        for (DownloadRecord.FileRecord fileRecord:downloadRecord.getFileRecordList()) {
+            fileRecord.setStartPoint(0);
+        }
+        atomicReference=new AtomicReference<>();
+        atomicReference.set(downloadRecord);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 1000; i++) {
+                    atomicReference.get().getFileRecordList().get(0).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                }
+
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 1000; i++) {
+                    atomicReference.get().getFileRecordList().get(1).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                }
+
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 1000; i++) {
+                    atomicReference.get().getFileRecordList().get(2).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                }
+
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println(atomicReference.get().toString());
+                Log.i("======","======"+atomicReference.get().toString());
+                SystemClock.sleep(1000);
+            }
+        }).start();
     }
     @Test
     public void asf(){
