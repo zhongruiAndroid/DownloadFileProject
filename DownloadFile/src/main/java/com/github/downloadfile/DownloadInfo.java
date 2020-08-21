@@ -290,6 +290,7 @@ public class DownloadInfo {
                     record.setDownloadLength( downloadLength+ len);
 
                     DownloadHelper.get().saveRecord(downloadRecord);
+                    test();
 //                    Log.i("=====",index+"====="+new Gson().toJson(downloadRecord));
                 }
                 int num = multiCompleteNum.incrementAndGet();
@@ -319,7 +320,9 @@ public class DownloadInfo {
         }
     }
 
-
+    public synchronized void test(){
+        long l = System.currentTimeMillis();
+    }
     /*可以单线程下载*/
     private void canSingleDownload(boolean canRangeDownload) {
         /*如果重新下载，忽略之前的下载进度*/

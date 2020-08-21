@@ -20,7 +20,7 @@ public class DownloadConfig implements Serializable {
     private boolean useSourceName;
 
     /*单个任务多线程下载数量*/
-    private int threadNum=1;
+    private int threadNum=3;
 
     protected DownloadConfig() {
     }
