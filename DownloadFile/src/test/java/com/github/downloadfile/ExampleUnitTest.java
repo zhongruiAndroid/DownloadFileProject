@@ -24,6 +24,21 @@ public class ExampleUnitTest {
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
     }
+    @Test
+    public void ko() {
+        try{
+            int a=1;
+            while (a<3){
+                System.out.println("1111111131111");
+                return;
+            }
+            System.out.println("222");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            System.out.println("finally");
+        }
+    }
     private AtomicReference<DownloadRecord> atomicReference;
     @Test
     public void adddd2sf(){

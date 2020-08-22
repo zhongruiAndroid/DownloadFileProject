@@ -7,6 +7,6 @@ public interface DownloadListener {
     void onProgress(long progress);
     void onSuccess(File file);
     void onPause();
-    void onCancel();
+    void onDelete();
     void onError();
 }
