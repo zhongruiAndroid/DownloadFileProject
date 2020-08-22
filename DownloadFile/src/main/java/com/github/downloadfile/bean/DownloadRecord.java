@@ -1,6 +1,5 @@
 package com.github.downloadfile.bean;
 
-import android.net.Uri;
 import android.text.TextUtils;
 
 import org.json.JSONArray;

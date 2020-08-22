@@ -6,13 +6,9 @@ import android.util.Log;
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.DownloadListener;
-import com.github.downloadfile.listener.SerializableCacheFileListener;
-import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -202,7 +198,6 @@ public class DownloadInfo {
 
     }
 
-    SerializableCacheFileListener serializableCacheFileListener;
 
     /*重新下载时重命名*/
     private File reDownloadAndRename(int reNum) {
