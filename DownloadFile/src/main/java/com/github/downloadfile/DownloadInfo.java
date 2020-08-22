@@ -24,15 +24,24 @@ public class DownloadInfo {
     private int fileSize;
     private DownloadListener downloadListener;
     private DownloadConfig downloadConfig;
-    private DownloadRecord downloadRecord;
+    private volatile DownloadRecord downloadRecord;
     private AtomicInteger multiCompleteNum;
+    private AtomicInteger multiPauseNum;
+    private AtomicInteger multiDeleteNum;
     private long startTime;
-    private List<Future> taskList=new ArrayList<>();
+    private List<Future> taskList = new ArrayList<>();
+
+    public static final int PERFORM_PAUSE = 1;
+    public static final int PERFORM_DELETE = 2;
+    /*1:暂停，2：删除*/
+    private int performType;
 
     public DownloadInfo(DownloadConfig config, DownloadListener listener) {
         this.downloadConfig = config;
         this.downloadListener = listener;
         multiCompleteNum = new AtomicInteger(0);
+        multiPauseNum = new AtomicInteger(0);
+        multiDeleteNum = new AtomicInteger(0);
     }
 
     public DownloadListener getDownloadListener() {
@@ -80,11 +89,20 @@ public class DownloadInfo {
             }
         });
     }
+
     private void pause() {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
                 getDownloadListener().onPause();
+            }
+        });
+    }
+    private void delete() {
+        DownloadHelper.get().getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                getDownloadListener().onDelete();
             }
         });
     }
@@ -252,15 +270,6 @@ public class DownloadInfo {
         }
     }
 
-    public void pauseTask(){
-        if(taskList==null||taskList.isEmpty()){
-            pause();
-            return;
-        }
-        for (Future future:taskList){
-            future.cancel(true);
-        }
-    }
 
     private void startMultiDownload(DownloadRecord.FileRecord record, long startPoint, long endPoint) {
         HttpURLConnection httpURLConnection = null;
@@ -302,6 +311,22 @@ public class DownloadInfo {
                     saveDownloadCacheInfo(downloadRecord);
 //                    Log.i("=====",index+"====="+new Gson().toJson(downloadRecord));
 
+                    /*如果外部调用暂停方法*/
+                    if (performType == PERFORM_PAUSE) {
+                        int num = multiPauseNum.incrementAndGet();
+                        if (num == downloadConfig.getThreadNum()) {
+                            pause();
+                        }
+                        return;
+                    }
+                    /*如果外部调用删除方法*/
+                    if (performType == PERFORM_DELETE) {
+                        int num = multiDeleteNum.incrementAndGet();
+                        if (num == downloadConfig.getThreadNum()) {
+                            delete();
+                        }
+                        return;
+                    }
 
                 }
                 int num = multiCompleteNum.incrementAndGet();
@@ -311,8 +336,9 @@ public class DownloadInfo {
                     Log.i("=====", "===========time:" + (endTime - startTime) / 1000L);
                     downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
                     DownloadHelper.get().clearRecord(downloadRecord.getUniqueId());
+
+                    success(downloadConfig.getSaveFile());
                 }
-                success(downloadConfig.getSaveFile());
             } else {
                 Log.i("====", "=========responseCode:" + responseCode);
                 error();
@@ -324,8 +350,6 @@ public class DownloadInfo {
             DownloadHelper.close(randomAccessFile);
             DownloadHelper.close(bis);
             DownloadHelper.close(inputStream);
-            if (multiCompleteNum.get() == downloadConfig.getThreadNum()) {
-            }
             if (httpURLConnection != null) {
                 httpURLConnection.disconnect();
             }
