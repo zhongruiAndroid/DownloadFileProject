@@ -14,9 +14,7 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,17 +26,20 @@ public class DownloadInfo {
     private AtomicInteger multiCompleteNum;
     private AtomicInteger multiPauseNum;
     private AtomicInteger multiDeleteNum;
-    private long startTime;
-    private List<Future> taskList = new ArrayList<>();
 
-    public static final int PERFORM_PAUSE = 1;
-    public static final int PERFORM_DELETE = 2;
-    /*1:暂停，2：删除*/
-    private int performType;
+
+
+    public static final int status_error=1;
+    public static final int status_success=2;
+    public static final int status_pause=3;
+    public static final int status_delete=4;
+
+    private AtomicInteger status;
 
     public DownloadInfo(DownloadConfig config, DownloadListener listener) {
         this.downloadConfig = config;
         this.downloadListener = listener;
+        status = new AtomicInteger(0);
         multiCompleteNum = new AtomicInteger(0);
         multiPauseNum = new AtomicInteger(0);
         multiDeleteNum = new AtomicInteger(0);
@@ -80,8 +81,25 @@ public class DownloadInfo {
         }
         return downloadListener;
     }
-
+    public void pauseDownload(){
+        int status=this.status.get();
+        if(status==status_error||status==status_success||status==status_pause||status==status_delete){
+            return;
+        }
+        this.status.set(status_pause);
+        DownloadHelper.get().getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                getDownloadListener().onPause();
+            }
+        });
+    }
     private void error() {
+        int status=this.status.get();
+        if(status==status_error){
+            return;
+        }
+        this.status.set(status_error);
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -213,7 +231,7 @@ public class DownloadInfo {
                     }
 
                     /*多线程下载*/
-                    canMultiDownload(fileSize);
+                    canMultiDownload( );
 //                    canSingleDownload(true);
                 }
             }
@@ -243,8 +261,7 @@ public class DownloadInfo {
     }
 
     /*可以多线程下载*/
-    private void canMultiDownload(int contentLength) {
-        startTime = System.currentTimeMillis();
+    private void canMultiDownload() {
         /*如果重新下载，忽略之前的下载进度*/
         if (downloadConfig.isReDownload()) {
             DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl().hashCode() + "");
@@ -252,21 +269,59 @@ public class DownloadInfo {
         int threadNum = downloadConfig.getThreadNum();
         final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         for (int i = 0; i < threadNum; i++) {
+
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
-            final int finalI = i;
-            Runnable runnable = new Runnable() {
+            long downloadLength = record.getDownloadLength();
+            if (downloadLength > 0) {
+                downloadLength -= 1;
+            }
+            TaskInfo taskInfo=new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
-                public void run() {
-                    long downloadLength = record.getDownloadLength();
-                    if (downloadLength > 0) {
-                        downloadLength -= 1;
-                    }
-                    DownloadRecord.FileRecord fileRecord = fileRecordList.get(finalI);
-                    startMultiDownload(fileRecord, record.getStartPoint() + downloadLength, record.getEndPoint());
+                public void readLength(long readLength) {
+                    record.setDownloadLength(record.getDownloadLength() + readLength);
+                    saveDownloadCacheInfo(downloadRecord);
                 }
-            };
-            Future<?> submit = DownloadHelper.get().getExecutorService().submit(runnable);
-            taskList.add(submit);
+                @Override
+                public void readComplete() {
+                    int num = multiCompleteNum.incrementAndGet();
+                    if (num == downloadConfig.getThreadNum()) {
+                        downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
+                        DownloadHelper.get().clearRecord(downloadRecord.getUniqueId());
+                        status.set(status_success);
+                        success(downloadConfig.getSaveFile());
+                    }
+                }
+                @Override
+                public boolean notNeedRead() {
+                    int status=DownloadInfo.this.status.get();
+                    /*如果其他下载任务出现异常*/
+                    if(status==status_error){
+                        return true;
+                    }
+                    /*如果外部调用暂停方法*/
+                    if (status == status_pause) {
+                        int num = multiPauseNum.incrementAndGet();
+                        if (num == downloadConfig.getThreadNum()) {
+                            pause();
+                        }
+                        return true;
+                    }
+                    /*如果外部调用删除方法*/
+                    if (status == status_delete) {
+                        int num = multiDeleteNum.incrementAndGet();
+                        if (num == downloadConfig.getThreadNum()) {
+                            delete();
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+                @Override
+                public void fail() {
+                    error();
+                }
+            });
+            DownloadHelper.get().getExecutorService().execute(taskInfo);
         }
     }
 
@@ -311,8 +366,12 @@ public class DownloadInfo {
                     saveDownloadCacheInfo(downloadRecord);
 //                    Log.i("=====",index+"====="+new Gson().toJson(downloadRecord));
 
+                    /*如果其他下载任务出现异常*/
+                    if(status==status_error){
+                        return;
+                    }
                     /*如果外部调用暂停方法*/
-                    if (performType == PERFORM_PAUSE) {
+                    if (status == status_pause) {
                         int num = multiPauseNum.incrementAndGet();
                         if (num == downloadConfig.getThreadNum()) {
                             pause();
@@ -320,7 +379,7 @@ public class DownloadInfo {
                         return;
                     }
                     /*如果外部调用删除方法*/
-                    if (performType == PERFORM_DELETE) {
+                    if (status == status_delete) {
                         int num = multiDeleteNum.incrementAndGet();
                         if (num == downloadConfig.getThreadNum()) {
                             delete();
@@ -330,17 +389,14 @@ public class DownloadInfo {
 
                 }
                 int num = multiCompleteNum.incrementAndGet();
-                Log.i("=====", downloadConfig.getThreadNum() + "=====onSuccess:" + num);
                 if (num == downloadConfig.getThreadNum()) {
                     long endTime = System.currentTimeMillis();
-                    Log.i("=====", "===========time:" + (endTime - startTime) / 1000L);
                     downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
                     DownloadHelper.get().clearRecord(downloadRecord.getUniqueId());
-
+                    status=status_success;
                     success(downloadConfig.getSaveFile());
                 }
             } else {
-                Log.i("====", "=========responseCode:" + responseCode);
                 error();
             }
         } catch (Exception e) {
