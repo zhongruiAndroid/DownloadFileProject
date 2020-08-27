@@ -60,32 +60,5 @@ public class MD5Coder {
         }
     }
 
-    public static String encode(File file) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            FileInputStream inputStream = new FileInputStream(file);
-            DigestInputStream digestInputStream = new DigestInputStream(inputStream, messageDigest);
-            byte[] buffer = new byte[4096];
 
-            while (digestInputStream.read(buffer) > -1) {
-            }
-
-            MessageDigest digest = digestInputStream.getMessageDigest();
-            digestInputStream.close();
-            byte[] md5 = digest.digest();
-            StringBuilder sb = new StringBuilder();
-            byte[] var8 = md5;
-            int var9 = md5.length;
-
-            for (int var10 = 0; var10 < var9; ++var10) {
-                byte b = var8[var10];
-                sb.append(String.format("%02X", b));
-            }
-
-            return sb.toString().toLowerCase();
-        } catch (Exception var12) {
-            var12.printStackTrace();
-            return null;
-        }
-    }
 }

@@ -86,7 +86,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-
+    long pre;
+    long startTime;
+    int i=0;
     private void start() {
         DownloadHelper.get().getExecutorService().execute(new Runnable() {
             @Override
@@ -98,24 +100,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 config.setIfExistAgainDownload(true);
                 DownloadInfo downloadInfo = new DownloadInfo(config.build(), new DownloadListener() {
                     @Override
-                    public void onConnect(long fileSizeKB) {
-                        Log.i("=====", "=====onConnect:" + fileSizeKB);
+                    public void onConnect(long totalSize) {
+                        startTime=System.currentTimeMillis();
+                        Log.i("=====", "=====onConnect:" + totalSize);
                     }
                     @Override
-                    public void onProgress(long downloadSizeKB) {
-                        Log.i("=====", "=====onProgress:" + downloadSizeKB);
+                    public void onProgress(long progress,long totalSize) {
+                        if(pre>=progress){
+                            Log.i("=====", pre+"=====onProgress:" + progress);
+                        }
+                        pre=progress;
+                        Log.i("=====", totalSize+"=====Progress:" + progress);
+                        i+=1;
                     }
                     @Override
                     public void onSuccess(File file) {
-                        Log.i("=====", "=====onSuccess:" + file.getAbsolutePath());
+                       long now=System.currentTimeMillis();
+                        Log.i("=====", (now-startTime)*1f/1000+"=====onSuccess:" + file.getAbsolutePath());
                     }
                     @Override
                     public void onPause() {
                         Log.i("=====", "=====onPause");
                     }
+
                     @Override
-                    public void onCancel() {
-                        Log.i("=====", "=====onCancel");
+                    public void onDelete() {
+                        Log.i("=====", "=====onDelete");
                     }
                     @Override
                     public void onError() {

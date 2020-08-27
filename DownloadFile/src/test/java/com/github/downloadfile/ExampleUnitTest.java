@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
@@ -23,6 +24,12 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+    @Test
+    public void sfs() {
+        AtomicLong atomicLong=new AtomicLong(0);
+        System.out.println(atomicLong.getAndAdd(10)+"=========");
+        System.out.println(atomicLong.get()+"=========");
     }
     @Test
     public void ko() {
