@@ -97,7 +97,6 @@ public class TaskInfo implements Runnable {
                 int contentLength = httpURLConnection.getContentLength();
                 if (contentLength == 0) {
                     setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
-                    Log.i("=====","====readComplete1=");
                     downloadListener.readComplete();
                     return;
                 }
@@ -154,7 +153,6 @@ public class TaskInfo implements Runnable {
                 }*/
 
                 setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
-                Log.i("=====","====readComplete2=");
                 downloadListener.readComplete();
             } else {
                 setCurrentStatus(DownloadInfo.STATUS_ERROR);

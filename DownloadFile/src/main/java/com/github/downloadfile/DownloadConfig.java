@@ -110,6 +110,9 @@ public class DownloadConfig implements Serializable {
     }
 
     public void setSaveFile(File saveFile) {
+        if(saveFile!=null&&!saveFile.getParentFile().exists()){
+            saveFile.getParentFile().mkdirs();
+        }
         this.saveFile = saveFile;
         createTempSaveFileBySaveFile(saveFile);
         createRecordFileBySaveFile(saveFile);

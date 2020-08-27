@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.github.downloadfile.DownloadManager;
 import com.github.downloadfile.bean.DownloadRecord;

@@ -145,7 +145,7 @@ public class DownloadInfo {
         });
     }
 
-    private synchronized void success(final File file) {
+    private void success(final File file) {
         int status = this.status.get();
         if (status == STATUS_SUCCESS) {
             return;
@@ -179,7 +179,7 @@ public class DownloadInfo {
             @Override
             public void run() {
                 final long progress = downloadProgress.addAndGet(downloadSize);
-                getDownloadListener().onProgress(progress,totalSize);
+                getDownloadListener().onProgress(progress+localCacheSize,totalSize);
             }
         });
     }
@@ -301,20 +301,19 @@ public class DownloadInfo {
         int threadNum = downloadConfig.getThreadNum();
         final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         setStatus(STATUS_PROGRESS);
+        localCacheSize=0;
         for (int i = 0; i < threadNum; i++) {
 
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
             long downloadLength = record.getDownloadLength();
-            if (downloadLength > 0) {
-                downloadLength -= 1;
-            }
+            localCacheSize+=downloadLength;
             TaskInfo taskInfo = new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
                 public void readLength(long readLength) {
                     long currentProgress = record.getDownloadLength() + readLength;
                     record.setDownloadLength(currentProgress);
                     saveDownloadCacheInfo(downloadRecord);
-                    progress(record.getDownloadLength());
+                    progress(readLength);
                 }
                 @Override
                 public void readComplete() {
@@ -467,6 +466,9 @@ public class DownloadInfo {
     /*边下载边保存当前下载进度*/
     public void saveDownloadCacheInfo(DownloadRecord downloadRecord) {
         if (downloadRecord == null) {
+            return;
+        }
+        if(true){
             return;
         }
         long nowTime = System.currentTimeMillis();
