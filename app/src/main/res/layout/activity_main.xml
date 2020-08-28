@@ -23,6 +23,18 @@
         android:text="button"
         android:textAllCaps="false" />
 
+    <Button
+        android:id="@+id/btTestFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试序列化"
+        android:textAllCaps="false" />
+    <Button
+        android:id="@+id/btTestSp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试序SP"
+        android:textAllCaps="false" />
     <ProgressBar
         android:id="@+id/pbProgress"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
