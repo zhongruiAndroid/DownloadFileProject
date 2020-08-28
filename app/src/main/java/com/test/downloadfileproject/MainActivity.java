@@ -8,6 +8,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.github.downloadfile.DownloadConfig;
 import com.github.downloadfile.DownloadInfo;
@@ -23,15 +26,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //    private AtomicReference<DownloadRecord> atomicReference;
     private DownloadRecord downloadRecord;
+    private ProgressBar pbProgress;
+    private TextView tvProgress;
+    private TextView tvSpeed;
+
+    private Button btPause;
+    private Button btDelete;
+    private DownloadInfo downloadInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tvSpeed= findViewById(R.id.tvSpeed);
+        btPause= findViewById(R.id.btPause);
+        btPause.setOnClickListener(this);
+        btDelete= findViewById(R.id.btDelete);
+        btDelete.setOnClickListener(this);
+        tvProgress= findViewById(R.id.tvProgress);
+        pbProgress= findViewById(R.id.pbProgress);
         View bt = findViewById(R.id.bt);
         bt.setOnClickListener(this);
 
         DownloadManager.init(this);
+
+
+        long totalSpace = DownloadManager.getContext().getFilesDir().getFreeSpace();
+
+        long totalSpace1 = DownloadManager.getContext().getCacheDir().getFreeSpace();
+        long totalSpace2 = DownloadManager.getContext().getExternalFilesDir("download").getFreeSpace();
+        long totalSpace3= DownloadManager.getContext().getExternalCacheDir().getFreeSpace();
+        Log.i("=====",totalSpace+"====="+totalSpace1+"====="+totalSpace2+"====="+totalSpace3);
 
     }
     public void addddsf(){
@@ -76,6 +101,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.btPause:
+                downloadInfo.changeStatus(DownloadInfo.STATUS_PAUSE);
+                break;
+            case R.id.btDelete:
+                if (downloadInfo != null) {
+                    downloadInfo.changeStatus(DownloadInfo.STATUS_DELETE);
+                }
+                break;
             case R.id.bt:
                 if(false){
                     addddsf();
@@ -97,15 +130,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
                 DownloadConfig.Builder config=new DownloadConfig.Builder();
                 config.setFileDownloadUrl(url);
+                config.setThreadNum(3);
+                config.setNeedSpeed(true);
                 config.setIfExistAgainDownload(true);
-                DownloadInfo downloadInfo = new DownloadInfo(config.build(), new DownloadListener() {
+                downloadInfo = new DownloadInfo(config.build(), new DownloadListener() {
                     @Override
                     public void onConnect(long totalSize) {
+//                        tvProgress.setText("0/"+totalSize);
+                        pbProgress.setMax((int) totalSize);
                         startTime=System.currentTimeMillis();
                         Log.i("=====", "=====onConnect:" + totalSize);
                     }
+
+                    @Override
+                    public void onSpeed(float speedBySecond) {
+                        tvSpeed.setText("网速:"+speedBySecond+"kb/s");
+                    }
+
                     @Override
                     public void onProgress(long progress,long totalSize) {
+                        tvProgress.setText(progress+"/"+totalSize);
+                        pbProgress.setProgress((int) progress);
                         if(pre>=progress){
                             Log.i("=====", pre+"=====onProgress:" + progress);
                         }

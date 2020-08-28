@@ -83,9 +83,9 @@ public class DownloadHelper {
 
     private final String sp_file_name = "multi_download_sp";
 
-    public DownloadRecord getRecord(String uniqueId) {
+    public DownloadRecord getRecord(String saveFilePathHashCode) {
         SharedPreferences sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
-        String downloadRecord = sp.getString(uniqueId, null);
+        String downloadRecord = sp.getString(saveFilePathHashCode, null);
         return DownloadRecord.fromJson(downloadRecord);
     }
 
@@ -100,10 +100,30 @@ public class DownloadHelper {
         }
         sp.edit().putString(key,json).apply();
     }
-    public void clearRecord(String uniqueId) {
+    public void clearRecord(String saveFilePathHashCode) {
         if(sp==null){
             sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
-        sp.edit().remove(uniqueId).commit();
+        sp.edit().remove(saveFilePathHashCode).commit();
+    }
+
+    public static boolean hasFreeSpace(Context context,long downloadSize){
+        if(context==null||downloadSize<=0){
+            return true;
+        }
+        long space;
+        File externalCacheDir = context.getExternalCacheDir();
+        if(externalCacheDir==null){
+            space=-1;
+        }else{
+            space=externalCacheDir.getFreeSpace();
+        }
+        File filesDir = context.getFilesDir();
+        if(space!=-1){
+            space=Math.min(space,filesDir.getFreeSpace());
+        }else{
+            space=filesDir.getFreeSpace();
+        }
+        return space>downloadSize;
     }
 }

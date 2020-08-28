@@ -15,10 +15,10 @@ public class DownloadRecord implements Serializable {
     private List<FileRecord> fileRecordList;
     private String uniqueId;
 
-    public DownloadRecord(long fileSize,String fileUrl) {
+    public DownloadRecord(long fileSize,String saveFilePathHashCode) {
         this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
-        this.uniqueId=fileUrl.hashCode()+"";
+        this.uniqueId=saveFilePathHashCode;
     }
     public void setThreadNum(int threadNum){
         long average = fileSize / threadNum;
@@ -47,7 +47,7 @@ public class DownloadRecord implements Serializable {
         return uniqueId;
     }
 
-    public synchronized List<FileRecord> getFileRecordList() {
+    public List<FileRecord> getFileRecordList() {
         if (fileRecordList == null) {
             fileRecordList = new ArrayList<>();
         }
@@ -118,9 +118,9 @@ public class DownloadRecord implements Serializable {
         try {
             JSONObject jsonObject=new JSONObject(json);
             long fileSize = jsonObject.optLong("fileSize");
-            String fileUrl = jsonObject.optString("fileUrl");
+            String saveFilePathHashCode = jsonObject.optString("saveFilePathHashCode");
             JSONArray fileRecordList = jsonObject.optJSONArray("fileRecordList");
-            downloadRecord=new DownloadRecord(fileSize,fileUrl);
+            downloadRecord=new DownloadRecord(fileSize,saveFilePathHashCode);
             downloadRecord.fileSize=fileSize;
             if(fileRecordList!=null&&fileRecordList.length()>0){
                 for (int i = 0; i < fileRecordList.length(); i++) {
@@ -142,7 +142,7 @@ public class DownloadRecord implements Serializable {
         JSONObject jsonObject=new JSONObject();
         try {
             jsonObject.put("fileSize",getFileSize());
-            jsonObject.put("fileUrl",getUniqueId());
+            jsonObject.put("saveFilePathHashCode",getUniqueId());
             JSONArray jsonArray=new JSONArray();
             for (FileRecord fileRecord : getFileRecordList()) {
                 JSONObject itemJson=new JSONObject();

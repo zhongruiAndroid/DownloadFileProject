@@ -18,6 +18,7 @@ public class DownloadConfig implements Serializable {
     /*下载地址*/
     private String fileDownloadUrl;
     private boolean useSourceName;
+    private boolean needSpeed;
 
     /*单个任务多线程下载数量*/
     private int threadNum=3;
@@ -60,6 +61,16 @@ public class DownloadConfig implements Serializable {
         public void setUseSourceName(boolean useSourceName) {
             config.setUseSourceName(useSourceName);
         }
+        public void setThreadNum(int threadNum) {
+            if(threadNum<0){
+                threadNum=1;
+            }
+            config.setThreadNum(threadNum);
+        }
+
+        public void setNeedSpeed(boolean needSpeed) {
+            this.config.setNeedSpeed(needSpeed);
+        }
 
         public DownloadConfig build() {
             if (config.getSaveFile() == null) {
@@ -94,6 +105,8 @@ public class DownloadConfig implements Serializable {
             downloadConfig.setSaveFile(config.getSaveFile());
             downloadConfig.setFileDownloadUrl(config.getFileDownloadUrl());
             downloadConfig.setUseSourceName(config.isUseSourceName());
+            downloadConfig.setNeedSpeed(config.isNeedSpeed());
+            downloadConfig.setThreadNum(config.getThreadNum());
             downloadConfig.setIfExistAgainDownload(config.isIfExistAgainDownload());
 
             return downloadConfig;
@@ -178,5 +191,13 @@ public class DownloadConfig implements Serializable {
             threadNum=1;
         }
         this.threadNum = threadNum;
+    }
+
+    public boolean isNeedSpeed() {
+        return needSpeed;
+    }
+
+    public void setNeedSpeed(boolean needSpeed) {
+        this.needSpeed = needSpeed;
     }
 }

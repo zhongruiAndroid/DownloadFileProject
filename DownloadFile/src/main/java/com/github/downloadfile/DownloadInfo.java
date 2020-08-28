@@ -25,7 +25,6 @@ public class DownloadInfo {
     private volatile DownloadRecord downloadRecord;
     private long totalSize;
     private long localCacheSize;
-    private AtomicLong saveDownloadInfoTime = new AtomicLong(0);
 
 
     public static final int STATUS_ERROR = 1;
@@ -54,7 +53,10 @@ public class DownloadInfo {
                 public void onConnect(long totalSize) {
 
                 }
+                @Override
+                public void onSpeed(float speedBySecond) {
 
+                }
                 @Override
                 public void onProgress(long progress, long totalSize) {
 
@@ -158,12 +160,14 @@ public class DownloadInfo {
             }
         });
     }
+
     private void connect(final long totalSize) {
         int status = this.status.get();
         if (status == STATUS_CONNECT) {
             return;
         }
-        this.totalSize=totalSize;
+        preTime=0;
+        this.totalSize = totalSize;
         downloadProgress.set(0);
         setStatus(STATUS_CONNECT);
         DownloadHelper.get().getHandler().post(new Runnable() {
@@ -174,12 +178,21 @@ public class DownloadInfo {
         });
     }
 
+    private long preTime;
     private synchronized void progress(final long downloadSize) {
+        final long progress = downloadProgress.addAndGet(downloadSize);
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                final long progress = downloadProgress.addAndGet(downloadSize);
-                getDownloadListener().onProgress(progress+localCacheSize,totalSize);
+                if(downloadConfig.isNeedSpeed()){
+                    if(preTime<=0){
+                        preTime=System.currentTimeMillis();
+                    }else{
+                        float speedBySecond = progress * 1000f / (System.currentTimeMillis() - preTime) / 1024;
+                        getDownloadListener().onSpeed(Float.parseFloat(String.format("%.1f", speedBySecond)));
+                    }
+                }
+                getDownloadListener().onProgress(progress + localCacheSize, totalSize);
             }
         });
     }
@@ -238,15 +251,20 @@ public class DownloadInfo {
                 } else {
                     int threadNum = downloadConfig.getThreadNum();
                     /*读取本地缓存配置*/
-                    downloadRecord = DownloadHelper.get().getRecord(fileUrl.hashCode() + "");
+                    String cacheKey = downloadConfig.getSaveFile().getAbsolutePath().hashCode() + "";
+                    downloadRecord = DownloadHelper.get().getRecord(cacheKey);
                     Log.i("=====", "=====toJson=" + downloadRecord.toJson());
-                    if (false) {
-                        return;
+                    // TODO: 2020/8/28
+                    /*如果本地缓存配置有数据，但是下载的文件不存在，则删除本地配置*/
+                    if (downloadConfig.getTempSaveFile() != null && !downloadConfig.getTempSaveFile().exists()) {
+                        DownloadHelper.get().clearRecord(cacheKey);
+                        downloadRecord = null;
                     }
+
                     if (downloadRecord == null || downloadRecord.getFileSize() <= 0) {
                         //如果用户手动删除了配置缓存文件，则重新下载
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
-                        downloadRecord = new DownloadRecord(contentLength, fileUrl);
+                        downloadRecord = new DownloadRecord(contentLength, downloadConfig.getSaveFile().getAbsolutePath().hashCode() + "");
                         downloadRecord.setThreadNum(threadNum);
 
 
@@ -296,17 +314,17 @@ public class DownloadInfo {
     private void canMultiDownload() {
         /*如果重新下载，忽略之前的下载进度*/
         if (downloadConfig.isReDownload()) {
-            DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl().hashCode() + "");
+            DownloadHelper.get().clearRecord(downloadConfig.getSaveFile().getAbsolutePath().hashCode() + "");
         }
         int threadNum = downloadConfig.getThreadNum();
         final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         setStatus(STATUS_PROGRESS);
-        localCacheSize=0;
+        localCacheSize = 0;
         for (int i = 0; i < threadNum; i++) {
 
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
             long downloadLength = record.getDownloadLength();
-            localCacheSize+=downloadLength;
+            localCacheSize += downloadLength;
             TaskInfo taskInfo = new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
                 public void readLength(long readLength) {
@@ -315,34 +333,12 @@ public class DownloadInfo {
                     saveDownloadCacheInfo(downloadRecord);
                     progress(readLength);
                 }
+
                 @Override
                 public void readComplete() {
                     checkOtherTaskInfoIsComplete();
                 }
-                /*public boolean notNeedRead() {
-                    int status=DownloadInfo.this.status.get();
-                    *//*如果其他下载任务出现异常*//*
-                    if(status== STATUS_ERROR){
-                        return true;
-                    }
-                    *//*如果外部调用暂停方法*//*
-                    if (status == STATUS_PAUSE) {
-                        int num = multiPauseNum.incrementAndGet();
-                        if (num == downloadConfig.getThreadNum()) {
-                            pause();
-                        }
-                        return true;
-                    }
-                    *//*如果外部调用删除方法*//*
-                    if (status == STATUS_DELETE) {
-                        int num = multiDeleteNum.incrementAndGet();
-                        if (num == downloadConfig.getThreadNum()) {
-                            delete();
-                        }
-                        return true;
-                    }
-                    return false;
-                }*/
+
                 @Override
                 public void fail() {
                     checkOtherTaskInfoIsError();
@@ -375,7 +371,7 @@ public class DownloadInfo {
     }
 
     /*如果外部通知下载任务需要删除，检查下载任务是否停止下载*/
-    private void checkOtherTaskInfoIsDelete() {
+    private synchronized void checkOtherTaskInfoIsDelete() {
         if (taskInfoList == null) {
             return;
         }
@@ -468,17 +464,6 @@ public class DownloadInfo {
         if (downloadRecord == null) {
             return;
         }
-        if(true){
-            return;
-        }
-        long nowTime = System.currentTimeMillis();
-        if (saveDownloadInfoTime == null) {
-            saveDownloadInfoTime = new AtomicLong(0);
-        }
-        if (nowTime - saveDownloadInfoTime.get() < 1500) {
-            return;
-        }
-        saveDownloadInfoTime.set(nowTime);
         DownloadHelper.get().saveRecord(downloadRecord);
     }
 
@@ -492,7 +477,7 @@ public class DownloadInfo {
 //            downloadConfig.getCacheRecordFile().getParentFile().mkdirs();
 //        }
         /*读取本地缓存配置*/
-        downloadRecord = DownloadHelper.get().getRecord(downloadConfig.getFileDownloadUrl().hashCode() + "");
+        downloadRecord = DownloadHelper.get().getRecord(downloadConfig.getSaveFile().getAbsolutePath().hashCode() + "");
         if (downloadRecord == null || downloadRecord.getFileSize() <= 0) {
             /*重新下载*/
             File tempSaveFile = downloadConfig.getTempSaveFile();
