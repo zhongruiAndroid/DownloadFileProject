@@ -15,12 +15,13 @@ public class DownloadRecord implements Serializable {
     private List<FileRecord> fileRecordList;
     private String uniqueId;
 
-    public DownloadRecord(long fileSize,String saveFilePathHashCode) {
+    public DownloadRecord(long fileSize, String uniqueId) {
         this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
-        this.uniqueId=saveFilePathHashCode;
+        this.uniqueId = uniqueId;
     }
-    public void setThreadNum(int threadNum){
+
+    public void setThreadNum(int threadNum) {
         long average = fileSize / threadNum;
         for (int i = 0; i < threadNum; i++) {
             long start = average * i;
@@ -36,13 +37,14 @@ public class DownloadRecord implements Serializable {
             addFileRecordList(record);
         }
     }
+
     public long getFileSize() {
         return fileSize;
     }
 
     public String getUniqueId() {
-        if(TextUtils.isEmpty(uniqueId)){
-            uniqueId="";
+        if (TextUtils.isEmpty(uniqueId)) {
+            uniqueId = "";
         }
         return uniqueId;
     }
@@ -111,21 +113,21 @@ public class DownloadRecord implements Serializable {
 
     public static DownloadRecord fromJson(String json) {
         DownloadRecord downloadRecord;
-        if(TextUtils.isEmpty(json)){
-            downloadRecord=new DownloadRecord(0,"");
+        if (TextUtils.isEmpty(json)) {
+            downloadRecord = new DownloadRecord(0, "");
             return downloadRecord;
         }
         try {
-            JSONObject jsonObject=new JSONObject(json);
+            JSONObject jsonObject = new JSONObject(json);
             long fileSize = jsonObject.optLong("fileSize");
-            String saveFilePathHashCode = jsonObject.optString("saveFilePathHashCode");
+            String uniqueId = jsonObject.optString("uniqueId");
             JSONArray fileRecordList = jsonObject.optJSONArray("fileRecordList");
-            downloadRecord=new DownloadRecord(fileSize,saveFilePathHashCode);
-            downloadRecord.fileSize=fileSize;
-            if(fileRecordList!=null&&fileRecordList.length()>0){
+            downloadRecord = new DownloadRecord(fileSize, uniqueId);
+            downloadRecord.fileSize = fileSize;
+            if (fileRecordList != null && fileRecordList.length() > 0) {
                 for (int i = 0; i < fileRecordList.length(); i++) {
                     JSONObject itemObj = fileRecordList.getJSONObject(i);
-                    FileRecord record=new FileRecord();
+                    FileRecord record = new FileRecord();
                     record.setStartPoint(itemObj.optLong("startPoint"));
                     record.setEndPoint(itemObj.optLong("endPoint"));
                     record.setDownloadLength(itemObj.optLong("downloadLength"));
@@ -134,24 +136,25 @@ public class DownloadRecord implements Serializable {
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            downloadRecord=new DownloadRecord(0,"");
+            downloadRecord = new DownloadRecord(0, "");
         }
         return downloadRecord;
     }
+
     public String toJson() {
-        JSONObject jsonObject=new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("fileSize",getFileSize());
-            jsonObject.put("saveFilePathHashCode",getUniqueId());
-            JSONArray jsonArray=new JSONArray();
+            jsonObject.put("fileSize", getFileSize());
+            jsonObject.put("uniqueId", getUniqueId());
+            JSONArray jsonArray = new JSONArray();
             for (FileRecord fileRecord : getFileRecordList()) {
-                JSONObject itemJson=new JSONObject();
-                itemJson.put("startPoint",fileRecord.getStartPoint());
-                itemJson.put("endPoint",fileRecord.getEndPoint());
-                itemJson.put("downloadLength",fileRecord.getDownloadLength());
+                JSONObject itemJson = new JSONObject();
+                itemJson.put("startPoint", fileRecord.getStartPoint());
+                itemJson.put("endPoint", fileRecord.getEndPoint());
+                itemJson.put("downloadLength", fileRecord.getDownloadLength());
                 jsonArray.put(itemJson);
             }
-            jsonObject.put("fileRecordList",jsonArray);
+            jsonObject.put("fileRecordList", jsonArray);
         } catch (JSONException e) {
             e.printStackTrace();
         }

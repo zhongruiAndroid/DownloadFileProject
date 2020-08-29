@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btTestFile;
     private Button btTestSp;
     private SharedPreferences sp;
+    String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bt.setOnClickListener(this);
 
         DownloadManager.init(this);
+
+        Pair<Long, Long> progressByUrl = DownloadHelper.get().getProgressByUrl(url);
+        Long second = progressByUrl.second;
+        pbProgress.setMax(Integer.valueOf(second + ""));
+        pbProgress.setProgress(Integer.valueOf(progressByUrl.first + ""));
 
 
         long totalSpace = DownloadManager.getContext().getFilesDir().getFreeSpace();
@@ -113,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    String testJson="{\"fileSize\":8860607,\"fileUrl\":\"1874667733\",\"fileRecordList\":[{\"startPoint\":0,\"endPoint\":2953534,\"downloadLength\":1907592},{\"startPoint\":2953535,\"endPoint\":5907069,\"downloadLength\":1158018},{\"startPoint\":5907070,\"endPoint\":8860607,\"downloadLength\":1041282}]}";
+    String testJson = "{\"fileSize\":8860607,\"fileUrl\":\"1874667733\",\"fileRecordList\":[{\"startPoint\":0,\"endPoint\":2953534,\"downloadLength\":1907592},{\"startPoint\":2953535,\"endPoint\":5907069,\"downloadLength\":1158018},{\"startPoint\":5907070,\"endPoint\":8860607,\"downloadLength\":1041282}]}";
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -128,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 String fileContents = "Hello world!";
                                 FileOutputStream fos = null;
                                 fos = MainActivity.this.openFileOutput(filename, Context.MODE_PRIVATE);
-                                fos.write((testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson).getBytes());
+                                fos.write((testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson).getBytes());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -143,10 +151,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 long time = System.currentTimeMillis();
 //                if (sp == null) {
-                    sp = DownloadManager.getContext().getSharedPreferences("afdsfdasdf", Context.MODE_PRIVATE);
+                sp = DownloadManager.getContext().getSharedPreferences("afdsfdasdf", Context.MODE_PRIVATE);
 //                }
                 for (int j = 0; j < 100; j++) {
-                    sp.edit().putString("jadfajalfjoawetf" + j, testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson+testJson).apply();
+                    sp.edit().putString("jadfajalfjoawetf" + j, testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson + testJson).apply();
                 }
 
                 long time2 = System.currentTimeMillis();
@@ -180,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
 //                String url = "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png";
-                String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
                 DownloadConfig.Builder config = new DownloadConfig.Builder();
                 config.setFileDownloadUrl(url);
                 config.setThreadNum(3);

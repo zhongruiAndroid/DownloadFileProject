@@ -33,8 +33,10 @@ public class TaskInfo implements Runnable {
 
     /*接收到外部的暂停或者删除通知*/
     private boolean receiveNotify;
+    private int index;
 
-    public TaskInfo(String fileUrl, long startPoint, long endPoint, File saveFile, ReadStreamListener downloadListener) {
+    public TaskInfo(int index, String fileUrl, long startPoint, long endPoint, File saveFile, ReadStreamListener downloadListener) {
+        this.index = index;
         this.fileUrl = fileUrl;
         this.startPoint = startPoint;
         this.endPoint = endPoint;
@@ -81,6 +83,7 @@ public class TaskInfo implements Runnable {
         RandomAccessFile randomAccessFile = null;
         if (TextUtils.isEmpty(fileUrl) || saveFile == null) {
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
+            Log.i("=====", "=====fail333");
             downloadListener.fail();
             return;
         }
@@ -89,6 +92,7 @@ public class TaskInfo implements Runnable {
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(15000);
             httpURLConnection.setReadTimeout(15000);
+            Log.i("=====", startPoint + "===point2===" + endPoint);
             httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
             httpURLConnection.connect();
             int responseCode = httpURLConnection.getResponseCode();
@@ -156,11 +160,13 @@ public class TaskInfo implements Runnable {
                 downloadListener.readComplete();
             } else {
                 setCurrentStatus(DownloadInfo.STATUS_ERROR);
+                Log.i("=====", startPoint + "===" + endPoint + "=====fail11111111==" + responseCode);
                 downloadListener.fail();
             }
         } catch (Exception e) {
             e.printStackTrace();
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
+            Log.i("=====", "=====fail22222222");
             downloadListener.fail();
         } finally {
             DownloadHelper.close(randomAccessFile);
