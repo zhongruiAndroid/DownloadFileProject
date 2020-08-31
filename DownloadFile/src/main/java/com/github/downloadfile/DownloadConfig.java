@@ -9,16 +9,19 @@ import java.io.File;
 import java.io.Serializable;
 
 public class DownloadConfig implements Serializable {
-    /*下次成功的文件*/
+    /*下载成功的文件*/
     private File saveFile;
     /*下载中的文件*/
     private File tempSaveFile;
     /*重新下载，忽略之前下载的进度*/
     private boolean reDownload;
+    /*如果要下载的文件存在，是否删除之前的重新下载*/
     private boolean ifExistAgainDownload;
     /*下载地址*/
     private String fileDownloadUrl;
+    /*是否使用url上面的文件名*/
     private boolean useSourceName;
+    /*是否需要用到下载速度*/
     private boolean needSpeed;
 
     /*单个任务多线程下载数量*/
@@ -75,20 +78,23 @@ public class DownloadConfig implements Serializable {
         private String downloadFileSavePath;
 
 
-        /*下次成功的文件*/
+        /*下载成功的文件*/
         private File saveFile;
         /*下载中的文件*/
         private File tempSaveFile;
         /*重新下载，忽略之前下载的进度*/
         private boolean reDownload;
+        /*如果要下载的文件存在，是否删除之前的重新下载*/
         private boolean ifExistAgainDownload;
         /*下载地址*/
         private String fileDownloadUrl;
+        /*是否使用url上面的文件名*/
         private boolean useSourceName;
+        /*是否需要用到下载速度*/
         private boolean needSpeed;
 
         /*单个任务多线程下载数量*/
-        private int threadNum = 3;
+        private int threadNum = 2;
 
         public Builder() {
             context = DownloadManager.getContext();

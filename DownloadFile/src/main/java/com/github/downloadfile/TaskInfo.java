@@ -31,12 +31,8 @@ public class TaskInfo implements Runnable {
 
     private int currentStatus;
 
-    /*接收到外部的暂停或者删除通知*/
-    private boolean receiveNotify;
-    private int index;
 
-    public TaskInfo(int index, String fileUrl, long startPoint, long endPoint, File saveFile, ReadStreamListener downloadListener) {
-        this.index = index;
+    public TaskInfo(String fileUrl, long startPoint, long endPoint, File saveFile, ReadStreamListener downloadListener) {
         this.fileUrl = fileUrl;
         this.startPoint = startPoint;
         this.endPoint = endPoint;
@@ -90,14 +86,16 @@ public class TaskInfo implements Runnable {
         try {
             URL url = new URL(fileUrl);
             httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setConnectTimeout(15000);
-            httpURLConnection.setReadTimeout(15000);
+            httpURLConnection.setConnectTimeout(30000);
+            httpURLConnection.setReadTimeout(30000);
             Log.i("=====", startPoint + "===point2===" + endPoint);
-            httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
+            if(endPoint!=0){
+                httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
+            }
             httpURLConnection.connect();
             int responseCode = httpURLConnection.getResponseCode();
 
-            if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
+            if (responseCode == HttpURLConnection.HTTP_PARTIAL||responseCode == HttpURLConnection.HTTP_OK) {
                 int contentLength = httpURLConnection.getContentLength();
                 if (contentLength == 0) {
                     setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
@@ -123,39 +121,8 @@ public class TaskInfo implements Runnable {
 
                     randomAccessFile.write(buff, 0, len);
                     downloadListener.readLength(len);
-//                    saveDownloadCacheInfo(downloadRecord);
-
-                    /*    *//*如果其他下载任务出现异常*//*
-                    if(statusListener.getStatus()==DownloadInfo.STATUS_ERROR){
-                        return;
-                    }
-                    *//*如果外部调用暂停方法*//*
-                    if (statusListener.getStatus()==DownloadInfo.STATUS_PAUSE) {
-                        int num = multiPauseNum.incrementAndGet();
-                        if (num == downloadConfig.getThreadNum()) {
-                            pause();
-                        }
-                        return;
-                    }
-                    *//*如果外部调用删除方法*//*
-                    if (statusListener.getStatus()==DownloadInfo.STATUS_DELETE) {
-                        int num = multiDeleteNum.incrementAndGet();
-                        if (num == downloadConfig.getThreadNum()) {
-                            delete();
-                        }
-                        return;
-                    }*/
 
                 }
-               /* int num = multiCompleteNum.incrementAndGet();
-                if (num == downloadConfig.getThreadNum()) {
-                    long endTime = System.currentTimeMillis();
-                    downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
-                    DownloadHelper.get().clearRecord(downloadRecord.getUniqueId());
-                    status=STATUS_SUCCESS;
-                    success(downloadConfig.getSaveFile());
-                }*/
-
                 setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
                 downloadListener.readComplete();
             } else {

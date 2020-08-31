@@ -75,15 +75,26 @@ public class DownloadHelper {
     }
 
     public static void deleteFile(File file) {
-        if (file == null) {
+        if(file==null){
             return;
         }
-        if (file.exists() && file.isFile()) {
+        if (file.exists()) {
+            if (file.isFile()) {
+                file.delete();
+            } else if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files != null) {
+                    int length = files.length;
+                    for (int i = 0; i < length; i++) {
+                        deleteFile(files[i]);
+                    }
+                }
+            }
             file.delete();
         }
     }
 
-    private final String sp_file_name = "multi_download_sp";
+    private final String sp_file_name = "zr_multi_download_sp";
 
     public DownloadRecord getRecord(String downloadFileUrl) {
         SharedPreferences sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
@@ -145,4 +156,18 @@ public class DownloadHelper {
         }
         return new Pair(new Long(localCacheSize), new Long(record.getFileSize()));
     }
+
+
+    /*重新下载时重命名*/
+    /*public static File reDownloadAndRename(File saveFile, int reNum) {
+        String parent = saveFile.getParent();
+        String name = saveFile.getName();
+        String newName = name.replace(".", "(" + reNum + ").");
+        File newFile = new File(parent, newName);
+        if (!newFile.exists()) {
+            return newFile;
+        } else {
+            return reDownloadAndRename(saveFile,reNum + 1);
+        }
+    }*/
 }

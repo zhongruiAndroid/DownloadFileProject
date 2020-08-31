@@ -41,6 +41,9 @@ public class ExampleUnitTest {
         File file=new File("f:/a/a/","a.txt");
 //        File file=new File("f:/a/a/a.txt");
         System.out.println(file.exists());
+        long a=30l*1024*1024*1024;
+        System.out.println("a=:"+String.valueOf(a));
+        System.out.println(1521410048/1024/1024/1024);
     }
     @Test
     public void asdf() {

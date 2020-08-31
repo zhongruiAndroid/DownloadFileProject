@@ -80,8 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void addddsf() {
-        downloadRecord = new DownloadRecord(30000, "");
-        downloadRecord.setThreadNum(3);
+        downloadRecord = new DownloadRecord(30000,2);
         for (DownloadRecord.FileRecord fileRecord : downloadRecord.getFileRecordList()) {
             fileRecord.setStartPoint(0);
         }
@@ -160,11 +159,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.i("=====", "===2==" + (time2 - time));
                 break;
             case R.id.btPause:
-                downloadInfo.changeStatus(DownloadInfo.STATUS_PAUSE);
+                downloadInfo.pauseDownload( );
                 break;
             case R.id.btDelete:
                 if (downloadInfo != null) {
-                    downloadInfo.changeStatus(DownloadInfo.STATUS_DELETE);
+                    downloadInfo.deleteDownload("");
                 }
                 break;
             case R.id.bt:
