@@ -15,13 +15,16 @@ public class DownloadRecord implements Serializable {
     private List<FileRecord> fileRecordList;
     private String uniqueId;
 
-    public DownloadRecord(long fileSize, String uniqueId) {
+    /*从缓存获取数据*/
+    private DownloadRecord(long fileSize, String uniqueId) {
         this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
         this.uniqueId = uniqueId;
     }
-
-    public void setThreadNum(int threadNum) {
+    /*第一次初始化下载*/
+    public DownloadRecord(long fileSize, int threadNum) {
+        this.fileSize = fileSize;
+        fileRecordList = new ArrayList<>();
         long average = fileSize / threadNum;
         for (int i = 0; i < threadNum; i++) {
             long start = average * i;
@@ -37,6 +40,7 @@ public class DownloadRecord implements Serializable {
             addFileRecordList(record);
         }
     }
+
 
     public long getFileSize() {
         return fileSize;
@@ -114,7 +118,7 @@ public class DownloadRecord implements Serializable {
     public static DownloadRecord fromJson(String json) {
         DownloadRecord downloadRecord;
         if (TextUtils.isEmpty(json)) {
-            downloadRecord = new DownloadRecord(0, "");
+            downloadRecord = new DownloadRecord(0,1);
             return downloadRecord;
         }
         try {

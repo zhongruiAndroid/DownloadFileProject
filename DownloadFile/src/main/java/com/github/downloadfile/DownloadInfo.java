@@ -172,7 +172,7 @@ public class DownloadInfo {
         if (status == STATUS_CONNECT) {
             return;
         }
-        preTime = 0;
+        reset();
         this.totalSize = totalSize;
         downloadProgress.set(0);
         setStatus(STATUS_CONNECT);
@@ -187,6 +187,11 @@ public class DownloadInfo {
     private long preTime;
     private long tempDownloadSize;
     private long tempTimeInterval=200;
+    private void reset(){
+        preTime=0;
+        tempDownloadSize=0;
+        localCacheSize = 0;
+    }
     private synchronized void progress(final long downloadSize) {
         final long progress = downloadProgress.addAndGet(downloadSize);
         DownloadHelper.get().getHandler().post(new Runnable() {
@@ -196,6 +201,7 @@ public class DownloadInfo {
                 if (downloadConfig.isNeedSpeed()) {
                     long nowTime = System.currentTimeMillis();
                     if (preTime <= 0) {
+                        tempDownloadSize=0;
                         preTime = nowTime;
                     }
                     long timeInterval = nowTime - preTime;
@@ -222,7 +228,6 @@ public class DownloadInfo {
             error();
             return;
         }
-        downloadConfig.setFileDownloadUrl(fileUrl);
         File saveFile = downloadConfig.getSaveFile();
         /*如果存在已下载完成的文件*/
         if (saveFile != null && saveFile.exists() && saveFile.isFile()) {
@@ -281,8 +286,7 @@ public class DownloadInfo {
                     if (downloadRecord == null || downloadRecord.getFileSize() <= 0) {
                         //如果用户手动删除了配置缓存文件，则重新下载
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
-                        downloadRecord = new DownloadRecord(contentLength, fileUrl.hashCode() + "");
-                        downloadRecord.setThreadNum(threadNum);
+                        downloadRecord = new DownloadRecord(contentLength, threadNum);
 
 
                     } else if (downloadRecord != null && downloadRecord.getFileSize() != contentLength) {
@@ -293,8 +297,7 @@ public class DownloadInfo {
                         /*删除需要下载的文件缓存*/
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
 
-                        downloadRecord = new DownloadRecord(contentLength, fileUrl.hashCode() + "");
-                        downloadRecord.setThreadNum(threadNum);
+                        downloadRecord = new DownloadRecord(contentLength, threadNum);
                     }
 
                     /*多线程下载*/
@@ -337,7 +340,6 @@ public class DownloadInfo {
         int threadNum = downloadConfig.getThreadNum();
         final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         setStatus(STATUS_PROGRESS);
-        localCacheSize = 0;
         for (int i = 0; i < threadNum; i++) {
 
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
@@ -456,7 +458,7 @@ public class DownloadInfo {
             if (tempSaveFile != null) {
                 tempSaveFile.delete();
             }
-            downloadRecord = new DownloadRecord(1, downloadConfig.getFileDownloadUrl().hashCode() + "");
+            downloadRecord = new DownloadRecord(0, 1);
             DownloadRecord.FileRecord record = new DownloadRecord.FileRecord();
             downloadRecord.addFileRecordList(record);
         }
