@@ -107,49 +107,58 @@ public class DownloadConfig implements Serializable {
             }
         }
 
-        public void setSaveFile(File saveFile) {
+        public Builder setSaveFile(File saveFile) {
             if (saveFile != null && !saveFile.getParentFile().exists()) {
                 saveFile.getParentFile().mkdirs();
             }
             this.saveFile = saveFile;
             createTempSaveFileBySaveFile(saveFile);
+            return this;
         }
 
-        public void setSaveFile(String filePath, String fileName) {
+        public Builder setSaveFile(String filePath, String fileName) {
             setSaveFile(new File(filePath, fileName));
+            return this;
         }
 
-        public void createTempSaveFileBySaveFile(File saveFile) {
+        public Builder createTempSaveFileBySaveFile(File saveFile) {
             String name = saveFile.getName();
             String substring = name.substring(0, name.lastIndexOf("."));
             this.tempSaveFile = new File(saveFile.getParent(), substring + ".temp");
+            return this;
         }
 
-        public void setIfExistAgainDownload(boolean ifExistAgainDownload) {
+        public Builder setIfExistAgainDownload(boolean ifExistAgainDownload) {
             this.ifExistAgainDownload = ifExistAgainDownload;
+            return this;
         }
 
-        public void setFileDownloadUrl(String fileDownloadUrl) {
+        public Builder setFileDownloadUrl(String fileDownloadUrl) {
             this.fileDownloadUrl = fileDownloadUrl;
+            return this;
         }
 
-        public void setUseSourceName(boolean useSourceName) {
+        public Builder setUseSourceName(boolean useSourceName) {
             this.useSourceName = useSourceName;
+            return this;
         }
 
-        public void setThreadNum(int threadNum) {
+        public Builder setThreadNum(int threadNum) {
             if (threadNum <= 0) {
                 threadNum = 1;
             }
             this.threadNum = threadNum;
+            return this;
         }
 
-        public void setNeedSpeed(boolean needSpeed) {
+        public Builder setNeedSpeed(boolean needSpeed) {
             this.needSpeed = needSpeed;
+            return this;
         }
 
-        public void setReDownload(boolean reDownload) {
+        public Builder setReDownload(boolean reDownload) {
             this.reDownload = reDownload;
+            return this;
         }
 
         public DownloadConfig build() {

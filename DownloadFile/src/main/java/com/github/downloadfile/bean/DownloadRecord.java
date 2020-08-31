@@ -101,20 +101,6 @@ public class DownloadRecord implements Serializable {
 
     }
 
-    @Override
-    public String toString() {
-        StringBuffer stringBuilder = new StringBuffer();
-        for (FileRecord fileRecord : getFileRecordList()) {
-            long startPoint = fileRecord.getStartPoint();
-            stringBuilder.append("{\"startPoint\":\"" + startPoint + "\"}");
-        }
-        String string = stringBuilder.toString();
-        return "DownloadRecord{" +
-                "fileSize=" + fileSize +
-                ", fileRecordList=" + string +
-                '}';
-    }
-
     public static DownloadRecord fromJson(String json) {
         DownloadRecord downloadRecord;
         if (TextUtils.isEmpty(json)) {

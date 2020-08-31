@@ -63,17 +63,6 @@ public class DownloadHelper {
         }
     }
 
-    public static void flush(Flushable flushable) {
-        if (flushable == null) {
-            return;
-        }
-        try {
-            flushable.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void deleteFile(File file) {
         if(file==null){
             return;

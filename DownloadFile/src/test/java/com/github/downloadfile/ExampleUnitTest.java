@@ -54,7 +54,7 @@ public class ExampleUnitTest {
     }
     @Test
     public void addddsf(){
-        DownloadRecord downloadRecord = new DownloadRecord(30000, "");
+        DownloadRecord downloadRecord = new DownloadRecord(0,1);
         for (DownloadRecord.FileRecord fileRecord:downloadRecord.getFileRecordList()) {
             fileRecord.setStartPoint(0);
         }
@@ -90,8 +90,6 @@ public class ExampleUnitTest {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println(atomicReference.get().toString());
-                Log.i("======","======"+atomicReference.get().toString());
                 SystemClock.sleep(1000);
             }
         }).start();

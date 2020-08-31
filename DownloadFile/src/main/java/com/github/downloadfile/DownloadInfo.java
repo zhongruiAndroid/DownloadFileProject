@@ -5,14 +5,9 @@ import android.util.Log;
 
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
-import com.github.downloadfile.listener.DownloadListener;
+import com.github.downloadfile.listener.FileDownloadListener;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadInfo {
-    private DownloadListener downloadListener;
+    private FileDownloadListener downloadListener;
     private DownloadConfig downloadConfig;
     private volatile DownloadRecord downloadRecord;
     /*下载文件的总大小*/
@@ -42,16 +37,16 @@ public class DownloadInfo {
     private AtomicInteger status;
     private AtomicLong downloadProgress;
 
-    public DownloadInfo(DownloadConfig config, DownloadListener listener) {
+    public DownloadInfo(DownloadConfig config, FileDownloadListener listener) {
         this.downloadConfig = config;
         this.downloadListener = listener;
         status = new AtomicInteger(0);
         downloadProgress = new AtomicLong(0);
     }
 
-    public DownloadListener getDownloadListener() {
+    public FileDownloadListener getDownloadListener() {
         if (downloadListener == null) {
-            downloadListener = new DownloadListener() {
+            downloadListener = new FileDownloadListener() {
                 @Override
                 public void onConnect(long totalSize) {
 
@@ -254,7 +249,8 @@ public class DownloadInfo {
         return -1;
     }
 
-    public void download(String fileUrl) {
+    public void download() {
+        String fileUrl=downloadConfig.getFileDownloadUrl();
         if (TextUtils.isEmpty(fileUrl)) {
             DownloadHelper.get().getHandler().post(new Runnable() {
                 @Override
@@ -370,7 +366,7 @@ public class DownloadInfo {
             }
             /*记录之前缓存的下载的进度*/
             localCacheSize += downloadLength;
-            final TaskInfo taskInfo = new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
+            TaskInfo taskInfo = new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
                 public void readLength(long readLength) {
                     long currentProgress = record.getDownloadLength() + readLength;

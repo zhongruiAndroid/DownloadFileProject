@@ -20,7 +20,7 @@ import com.github.downloadfile.DownloadInfo;
 import com.github.downloadfile.DownloadManager;
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
-import com.github.downloadfile.listener.DownloadListener;
+import com.github.downloadfile.listener.FileDownloadListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -188,10 +188,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                String url = "https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png";
                 DownloadConfig.Builder config = new DownloadConfig.Builder();
                 config.setFileDownloadUrl(url);
-                config.setThreadNum(3);
+                config.setThreadNum(1);
                 config.setNeedSpeed(true);
                 config.setIfExistAgainDownload(true);
-                downloadInfo = new DownloadInfo(config.build(), new DownloadListener() {
+                downloadInfo = new DownloadInfo(config.build(),null);
+//                downloadInfo.download();
+
+                DownloadManager.download(config.build(),new FileDownloadListener() {
                     @Override
                     public void onConnect(long totalSize) {
 //                        tvProgress.setText("0/"+totalSize);
@@ -238,7 +241,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.i("=====", "=====onError");
                     }
                 });
-                downloadInfo.download(url);
             }
         });
     }
