@@ -1,13 +1,13 @@
 package com.test.downloadfileproject;
 
 
-import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -23,9 +23,7 @@ import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.DownloadListener;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -48,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        copy(this,url);
         btTestFile = findViewById(R.id.btTestFile);
         btTestFile.setOnClickListener(this);
         btTestSp = findViewById(R.id.btTestSp);
@@ -243,5 +242,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 downloadInfo.download(url);
             }
         });
+    }
+    public static void copy(Context ctx, String txt) {
+        if (ctx==null || TextUtils.isEmpty(txt)) {
+            return;
+        }
+        ClipboardManager clipboardManager = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clipData = ClipData.newPlainText("text", txt);
+        clipboardManager.setPrimaryClip(clipData);
     }
 }

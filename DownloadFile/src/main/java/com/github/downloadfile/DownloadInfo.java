@@ -185,18 +185,28 @@ public class DownloadInfo {
     }
 
     private long preTime;
-
+    private long tempDownloadSize;
+    private long tempTimeInterval=200;
     private synchronized void progress(final long downloadSize) {
         final long progress = downloadProgress.addAndGet(downloadSize);
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
+                //计算网速
                 if (downloadConfig.isNeedSpeed()) {
+                    long nowTime = System.currentTimeMillis();
                     if (preTime <= 0) {
-                        preTime = System.currentTimeMillis();
-                    } else {
-                        float speedBySecond = progress * 1000f / (System.currentTimeMillis() - preTime) / 1024;
+                        preTime = nowTime;
+                    }
+                    long timeInterval = nowTime - preTime;
+                    if (timeInterval>=tempTimeInterval){
+                        tempTimeInterval=1000;
+                        float speedBySecond = tempDownloadSize * 1000f/timeInterval/1024;
+                        preTime=nowTime;
+                        tempDownloadSize=0;
                         getDownloadListener().onSpeed(Float.parseFloat(String.format("%.1f", speedBySecond)));
+                    }else{
+                        tempDownloadSize+=downloadSize;
                     }
                 }
                 getDownloadListener().onProgress(progress + localCacheSize, totalSize);
