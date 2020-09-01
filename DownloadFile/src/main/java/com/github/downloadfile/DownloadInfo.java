@@ -98,7 +98,7 @@ public class DownloadInfo {
         changeStatus(STATUS_PAUSE);
     }
 
-    public void deleteDownload(String downloadKey) {
+    public void deleteDownload( ) {
         changeStatus(STATUS_DELETE);
     }
 
@@ -248,8 +248,15 @@ public class DownloadInfo {
         }
         return -1;
     }
-
-    public void download() {
+    public void download(){
+        DownloadHelper.get().getExecutorService().execute(new Runnable() {
+            @Override
+            public void run() {
+                downloadByChildThread();
+            }
+        });
+    }
+    private void downloadByChildThread() {
         String fileUrl=downloadConfig.getFileDownloadUrl();
         if (TextUtils.isEmpty(fileUrl)) {
             DownloadHelper.get().getHandler().post(new Runnable() {
@@ -446,7 +453,7 @@ public class DownloadInfo {
 
 
     /*边下载边保存当前下载进度*/
-    public void saveDownloadCacheInfo(DownloadRecord downloadRecord) {
+    private void saveDownloadCacheInfo(DownloadRecord downloadRecord) {
         if (downloadRecord == null) {
             return;
         }
@@ -454,6 +461,6 @@ public class DownloadInfo {
         if (status == STATUS_ERROR) {
             return;
         }
-        DownloadHelper.get().saveRecord(downloadRecord);
+        DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl().hashCode()+"");
     }
 }

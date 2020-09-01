@@ -34,6 +34,14 @@ public class ExampleUnitTest {
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
     }
+    @Test
+    public void sf() {
+        String hwUrl = "https://imtt.dd.qq.com/16891/apk/0F9A4978BE0E05EFBBBAEF535150EEA9.apk?fsname=com.vmall.client_1.9.3.310_10903310.apk&csr=1bbd";
+        long time=System.currentTimeMillis();
+        System.out.println(hwUrl.hashCode()+"");
+        long time2=System.currentTimeMillis();
+        System.out.println((time2-time)/1000f);
+    }
 
 
     @Test

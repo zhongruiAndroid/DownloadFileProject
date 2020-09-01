@@ -18,13 +18,15 @@ public class DownloadManager {
         context = ctx;
     }
 
-    public static void download(DownloadConfig config, FileDownloadListener listener) {
+    public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {
         DownloadInfo downloadInfo = new DownloadInfo(config, listener);
         downloadInfo.download();
+        return downloadInfo;
     }
-    public static void download(String url, FileDownloadListener listener) {
+    public static DownloadInfo download(String url, FileDownloadListener listener) {
         DownloadConfig config=new DownloadConfig.Builder().setFileDownloadUrl(url).build();
         DownloadInfo downloadInfo = new DownloadInfo(config, listener);
         downloadInfo.download();
+        return downloadInfo;
     }
 }

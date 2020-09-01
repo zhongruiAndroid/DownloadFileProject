@@ -96,8 +96,7 @@ public class DownloadRecord implements Serializable {
             this.downloadLength = downloadLength;
         }
 
-        public static void test() {
-        }
+
 
     }
 

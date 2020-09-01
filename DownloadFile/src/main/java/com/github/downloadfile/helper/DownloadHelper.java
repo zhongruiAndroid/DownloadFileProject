@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import com.github.downloadfile.DownloadManager;
@@ -12,7 +12,6 @@ import com.github.downloadfile.bean.DownloadRecord;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.Flushable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -64,7 +63,7 @@ public class DownloadHelper {
     }
 
     public static void deleteFile(File file) {
-        if(file==null){
+        if (file == null) {
             return;
         }
         if (file.exists()) {
@@ -91,12 +90,11 @@ public class DownloadHelper {
         return DownloadRecord.fromJson(downloadRecord);
     }
 
-    public void saveRecord(DownloadRecord downloadRecord) {
-        if (downloadRecord == null) {
+    public void saveRecord(DownloadRecord downloadRecord, String key) {
+        if (downloadRecord == null || TextUtils.isEmpty(key)) {
             return;
         }
         String json = downloadRecord.toJson();
-        String key = downloadRecord.getUniqueId();
         if (sp == null) {
             sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
