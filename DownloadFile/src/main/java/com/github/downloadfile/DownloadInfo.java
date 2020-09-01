@@ -345,6 +345,7 @@ public class DownloadInfo {
             prepareDownload();
         } catch (Exception e) {
             e.printStackTrace();
+            error();
         } finally {
             if (httpURLConnection != null) {
                 httpURLConnection.disconnect();

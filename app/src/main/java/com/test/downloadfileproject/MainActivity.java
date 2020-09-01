@@ -18,6 +18,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private DownloadInfo downloadInfo;
 
+    private long downloadTime;
 
     public static final String nbyUrl = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
     public static final String hwUrl = "https://imtt.dd.qq.com/16891/apk/0F9A4978BE0E05EFBBBAEF535150EEA9.apk?fsname=com.vmall.client_1.9.3.310_10903310.apk&csr=1bbd";
@@ -129,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cbUseSpeed = findViewById(R.id.cbUseSpeed);
         tvThreadNum = findViewById(R.id.tvThreadNum);
         sbThreadNum = findViewById(R.id.sbThreadNum);
+
         tvResult = findViewById(R.id.tvResult);
 
 
@@ -141,6 +144,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btCopyMZ.setOnClickListener(this);
         btCopyRE.setOnClickListener(this);
 
+        sbThreadNum.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                tvThreadNum.setText("线程数量："+progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     @Override
@@ -197,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         int threadNum = sbThreadNum.getProgress();
         if (threadNum <= 0) {
+            sbThreadNum.setProgress(1);
             threadNum = 1;
         }
         setStringData("threadNum", threadNum + "");
@@ -211,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         config.setNeedSpeed(cbUseSpeed.isChecked());
         config.setIfExistAgainDownload(cbAgainDownload.isChecked());
         config.setReDownload(cbReDownload.isChecked());
+        config.setUseSourceName(cbUseUrlSourceName.isChecked());
         if (downloadInfo != null && downloadInfo.getStatus() == DownloadInfo.STATUS_PROGRESS) {
             return;
         }
@@ -219,11 +240,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onConnect(long totalSize) {
                 pbProgress.setMax((int) totalSize);
                 tvResult.setText("连接中");
+                downloadTime=System.currentTimeMillis();
             }
 
             @Override
             public void onSpeed(float speedBySecond) {
-                tvSpeed.setText("网速:" + speedBySecond + "kb/s");
+                tvSpeed.setText("下载速度:" + speedBySecond + "kb/s");
             }
 
             @Override
@@ -235,7 +257,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onSuccess(File file) {
-                tvResult.setText("下载完成：" + file.getAbsolutePath());
+                long timeInterval = System.currentTimeMillis() - downloadTime;
+                tvResult.setText("下载完成：(耗时"+timeInterval*1f/1000+"s)" + file.getAbsolutePath());
             }
 
             @Override
