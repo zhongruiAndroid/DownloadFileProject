@@ -98,7 +98,7 @@ public class DownloadHelper {
         if (sp == null) {
             sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
-        sp.edit().putString(key, json).apply();
+        sp.edit().putString(key, json).commit();
     }
 
     public void clearRecord(String downloadFileUrl) {
