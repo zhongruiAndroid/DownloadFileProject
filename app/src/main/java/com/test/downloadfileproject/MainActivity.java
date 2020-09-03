@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btCopyHW;
     private Button btCopyMZ;
     private Button btCopyRE;
+    private Button btCopyNBY;
     private AppCompatCheckBox cbAgainDownload;
     private AppCompatCheckBox cbReDownload;
     private AppCompatCheckBox cbUseUrlSourceName;
@@ -125,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btCopyHW = findViewById(R.id.btCopyHW);
         btCopyMZ = findViewById(R.id.btCopyMZ);
         btCopyRE = findViewById(R.id.btCopyRE);
+        btCopyNBY = findViewById(R.id.btCopyNBY);
         cbAgainDownload = findViewById(R.id.cbAgainDownload);
         cbReDownload = findViewById(R.id.cbReDownload);
         cbUseUrlSourceName = findViewById(R.id.cbUseUrlSourceName);
@@ -143,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btCopyHW.setOnClickListener(this);
         btCopyMZ.setOnClickListener(this);
         btCopyRE.setOnClickListener(this);
+        btCopyNBY.setOnClickListener(this);
 
         sbThreadNum.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -194,6 +197,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btCopyRE:
                 copyUrl(reUrl);
+                break;
+            case R.id.btCopyNBY:
+                copyUrl(nbyUrl);
                 break;
         }
     }

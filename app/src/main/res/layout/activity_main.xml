@@ -194,6 +194,14 @@
                 android:text="复制RE管理器下载地址"
                 android:textAllCaps="false"
                 android:textSize="13sp" />
+            <Button
+                android:id="@+id/btCopyNBY"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="复制努比亚商城下载地址"
+                android:textAllCaps="false"
+                android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
 
