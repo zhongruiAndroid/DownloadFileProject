@@ -9,7 +9,6 @@ import android.util.Pair;
 
 import com.github.downloadfile.DownloadManager;
 import com.github.downloadfile.bean.DownloadRecord;
-import com.github.downloadfile.db.DBDao;
 
 import java.io.Closeable;
 import java.io.File;
@@ -84,31 +83,14 @@ public class DownloadHelper {
     }
 
     private final String sp_file_name = "zr_multi_download_sp";
-    public DownloadRecord getRecord(String unionId) {
-        return DBDao.get().getDownloadProgress(unionId);
-    }
 
-    public void saveRecord(DownloadRecord downloadRecord ) {
-        if (downloadRecord == null ) {
-            return;
-        }
-        DBDao.get().addOrUpdateDownloadProgress(downloadRecord);
-    }
-
-    public void clearRecord(String downloadFileUrl) {
-        if (sp == null) {
-            sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
-        }
-        sp.edit().remove(downloadFileUrl.hashCode() + "").commit();
-    }
-    /**********************************************************************************/
-    public DownloadRecord getRecord2(String downloadFileUrl) {
+    public DownloadRecord getRecord(String downloadFileUrl) {
         SharedPreferences sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         String downloadRecord = sp.getString(downloadFileUrl.hashCode() + "", null);
         return DownloadRecord.fromJson(downloadRecord);
     }
 
-    public void saveRecord2(DownloadRecord downloadRecord, String key) {
+    public void saveRecord(DownloadRecord downloadRecord, String key) {
         if (downloadRecord == null || TextUtils.isEmpty(key)) {
             return;
         }
@@ -119,7 +101,7 @@ public class DownloadHelper {
         sp.edit().putString(key, json).commit();
     }
 
-    public void clearRecord2(String downloadFileUrl) {
+    public void clearRecord(String downloadFileUrl) {
         if (sp == null) {
             sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
