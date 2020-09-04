@@ -17,6 +17,8 @@ public class DownloadConfig implements Serializable {
     private boolean reDownload;
     /*如果要下载的文件存在，是否删除之前的重新下载*/
     private boolean ifExistAgainDownload;
+    /*下载任务的唯一标识*/
+    private String fileDownloadUnionId;
     /*下载地址*/
     private String fileDownloadUrl;
     /*是否使用url上面的文件名*/
@@ -67,6 +69,7 @@ public class DownloadConfig implements Serializable {
         this.tempSaveFile = builder.tempSaveFile;
         this.reDownload = builder.reDownload;
         this.ifExistAgainDownload = builder.ifExistAgainDownload;
+        this.fileDownloadUnionId = builder.fileDownloadUnionId;
         this.fileDownloadUrl = builder.fileDownloadUrl;
         this.useSourceName = builder.useSourceName;
         this.needSpeed = builder.needSpeed;
@@ -86,6 +89,8 @@ public class DownloadConfig implements Serializable {
         private boolean reDownload;
         /*如果要下载的文件存在，是否删除之前的重新下载*/
         private boolean ifExistAgainDownload;
+        /*下载任务的唯一标识*/
+        private String fileDownloadUnionId;
         /*下载地址*/
         private String fileDownloadUrl;
         /*是否使用url上面的文件名*/
@@ -135,7 +140,14 @@ public class DownloadConfig implements Serializable {
 
         public Builder setFileDownloadUrl(String fileDownloadUrl) {
             this.fileDownloadUrl = fileDownloadUrl;
+            if(TextUtils.isEmpty(fileDownloadUnionId)){
+                setFileDownloadUnionId(fileDownloadUrl);
+            }
             return this;
+        }
+
+        public void setFileDownloadUnionId(String fileDownloadUnionId) {
+            this.fileDownloadUnionId = fileDownloadUnionId;
         }
 
         public Builder setUseSourceName(boolean useSourceName) {
@@ -185,6 +197,10 @@ public class DownloadConfig implements Serializable {
 
     public String getFileDownloadUrl() {
         return fileDownloadUrl;
+    }
+
+    public String getFileDownloadUnionId() {
+        return fileDownloadUnionId;
     }
 
     public boolean isUseSourceName() {

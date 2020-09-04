@@ -14,6 +14,8 @@ public class DownloadRecord implements Serializable {
     private long fileSize;
     private List<FileRecord> fileRecordList;
     private String uniqueId;
+    private String downloadUrl;
+//    private String downloadPath;
 
     /*从缓存获取数据*/
     private DownloadRecord(long fileSize, String uniqueId) {
@@ -21,6 +23,7 @@ public class DownloadRecord implements Serializable {
         fileRecordList = new ArrayList<>();
         this.uniqueId = uniqueId;
     }
+
     /*第一次初始化下载*/
     public DownloadRecord(long fileSize, int threadNum) {
         this.fileSize = fileSize;
@@ -46,12 +49,37 @@ public class DownloadRecord implements Serializable {
         return fileSize;
     }
 
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
+    }
+
     public String getUniqueId() {
         if (TextUtils.isEmpty(uniqueId)) {
             uniqueId = "";
         }
         return uniqueId;
     }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+//    public String getDownloadPath() {
+//        return downloadPath;
+//    }
+//
+//    public void setDownloadPath(String downloadPath) {
+//        this.downloadPath = downloadPath;
+//    }
+
 
     public List<FileRecord> getFileRecordList() {
         if (fileRecordList == null) {
@@ -97,13 +125,32 @@ public class DownloadRecord implements Serializable {
         }
 
 
+    }
 
+    public static List<FileRecord> fromJsonArray(String jsonArray) {
+        List<FileRecord>list=new ArrayList<>();
+        try {
+            JSONArray fileRecordList = new JSONArray(jsonArray);
+            if (fileRecordList != null && fileRecordList.length() > 0) {
+                for (int i = 0; i < fileRecordList.length(); i++) {
+                    JSONObject itemObj = fileRecordList.getJSONObject(i);
+                    FileRecord record = new FileRecord();
+                    record.setStartPoint(itemObj.optLong("startPoint"));
+                    record.setEndPoint(itemObj.optLong("endPoint"));
+                    record.setDownloadLength(itemObj.optLong("downloadLength"));
+                    list.add(record);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     public static DownloadRecord fromJson(String json) {
         DownloadRecord downloadRecord;
         if (TextUtils.isEmpty(json)) {
-            downloadRecord = new DownloadRecord(0,1);
+            downloadRecord = new DownloadRecord(0, 1);
             return downloadRecord;
         }
         try {
@@ -128,6 +175,23 @@ public class DownloadRecord implements Serializable {
             downloadRecord = new DownloadRecord(0, "");
         }
         return downloadRecord;
+    }
+
+    public String toJsonByRecordInfo() {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (FileRecord fileRecord : getFileRecordList()) {
+                JSONObject itemJson = new JSONObject();
+                itemJson.put("startPoint", fileRecord.getStartPoint());
+                itemJson.put("endPoint", fileRecord.getEndPoint());
+                itemJson.put("downloadLength", fileRecord.getDownloadLength());
+                jsonArray.put(itemJson);
+            }
+            return jsonArray.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "[]";
     }
 
     public String toJson() {

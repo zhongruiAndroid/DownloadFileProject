@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -34,25 +35,44 @@ public class ExampleUnitTest {
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
     }
+
+    @Test
+    public void sddf() {
+        AtomicInteger atomicInteger=new AtomicInteger();
+        if(false||atomicInteger.incrementAndGet()==0){
+
+        }
+        System.out.println(atomicInteger.get());
+    }
+
+    @Test
+    public void sdf() {
+        float atk = 1000;
+        float def = 1000;
+        float a = atk * (1f / (1 + 2 * def * 1f / atk)) + 1;
+        System.out.println(a);
+    }
+
     @Test
     public void sf() {
         String hwUrl = "https://imtt.dd.qq.com/16891/apk/0F9A4978BE0E05EFBBBAEF535150EEA9.apk?fsname=com.vmall.client_1.9.3.310_10903310.apk&csr=1bbd";
-        long time=System.currentTimeMillis();
-        System.out.println(hwUrl.hashCode()+"");
-        long time2=System.currentTimeMillis();
-        System.out.println((time2-time)/1000f);
+        long time = System.currentTimeMillis();
+        System.out.println(hwUrl.hashCode() + "");
+        long time2 = System.currentTimeMillis();
+        System.out.println((time2 - time) / 1000f);
     }
 
 
     @Test
     public void as1df() {
-        File file=new File("f:/a/a/","a.txt");
+        File file = new File("f:/a/a/", "a.txt");
 //        File file=new File("f:/a/a/a.txt");
         System.out.println(file.exists());
-        long a=30l*1024*1024*1024;
-        System.out.println("a=:"+String.valueOf(a));
-        System.out.println(1521410048/1024/1024/1024);
+        long a = 30l * 1024 * 1024 * 1024;
+        System.out.println("a=:" + String.valueOf(a));
+        System.out.println(1521410048 / 1024 / 1024 / 1024);
     }
+
     @Test
     public void asdf() {
         String url = "http://vfx.mtime.cn/Video/2019/03/19/mp4/190319222227698228.mp4";
@@ -67,27 +87,26 @@ public class ExampleUnitTest {
 
     @Test
     public void adsddf() throws IOException {
-//        String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
+//        String download_url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
         String url = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk";
         System.out.println(url.split("\\?")[0]);
     }
 
 
-
     @Test
     public void asddf() throws IOException {
-        System.out.println(true||false&&false);
-        System.out.println(String.format("%.3f",3.1414));
-        File file = new File("f:/a/b2/ccc.txt" );
+        System.out.println(true || false && false);
+        System.out.println(String.format("%.3f", 3.1414));
+        File file = new File("f:/a/b2/ccc.txt");
         System.out.println(file.getName());
-        boolean b = file.renameTo(new File("f:/a/b2","a.txt"));
+        boolean b = file.renameTo(new File("f:/a/b2", "a.txt"));
         System.out.println(b);
-        if (true){
+        if (true) {
             return;
         }
         System.out.println(file.isFile());
         System.out.println(file.isDirectory());
-        if(!file.getParentFile().exists()){
+        if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
             System.out.println("==========d=====1======");
         }
@@ -96,29 +115,29 @@ public class ExampleUnitTest {
         System.out.println(file.isFile());
 
 
-
     }
 
     @Test
     public void adasfdsdddddf() {
         System.out.println(new Date());
-        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyMMdd");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd");
         System.out.println(simpleDateFormat.format(new Date()));
     }
 
     @Test
     public void adasfdasfsdddddf() {
-        StringBuilder stringBuilder=new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("1,");
         stringBuilder.append("2,");
         stringBuilder.append("3,");
         int index = stringBuilder.lastIndexOf(",");
         System.out.println(index);
-        if(index!=-1){
+        if (index != -1) {
             stringBuilder.deleteCharAt(index);
         }
         System.out.println(stringBuilder.toString());
     }
+
     @Test
     public void adasfdsddddf() {
         Map<String, String> userInfo = new HashMap<>();

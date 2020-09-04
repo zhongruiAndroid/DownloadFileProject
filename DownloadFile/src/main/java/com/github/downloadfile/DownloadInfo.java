@@ -462,6 +462,7 @@ public class DownloadInfo {
         if (status == STATUS_ERROR) {
             return;
         }
-        DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl().hashCode()+"");
+        downloadRecord.setUniqueId(downloadConfig.getFileDownloadUnionId());
+        DownloadHelper.get().saveRecord(downloadRecord);
     }
 }
