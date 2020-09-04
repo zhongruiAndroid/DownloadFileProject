@@ -14,6 +14,8 @@ public class DownloadRecord implements Serializable {
     private long fileSize;
     private List<FileRecord> fileRecordList;
     private String uniqueId;
+    private String downloadUrl;
+//    private String downloadPath;
 
     /*从缓存获取数据*/
     private DownloadRecord(long fileSize, String uniqueId) {
@@ -46,12 +48,37 @@ public class DownloadRecord implements Serializable {
         return fileSize;
     }
 
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
+    }
+
     public String getUniqueId() {
         if (TextUtils.isEmpty(uniqueId)) {
             uniqueId = "";
         }
         return uniqueId;
     }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+//    public String getDownloadPath() {
+//        return downloadPath;
+//    }
+//
+//    public void setDownloadPath(String downloadPath) {
+//        this.downloadPath = downloadPath;
+//    }
+
 
     public List<FileRecord> getFileRecordList() {
         if (fileRecordList == null) {

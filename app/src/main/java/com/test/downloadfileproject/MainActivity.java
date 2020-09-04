@@ -25,8 +25,10 @@ import android.widget.Toast;
 import com.github.downloadfile.DownloadConfig;
 import com.github.downloadfile.DownloadInfo;
 import com.github.downloadfile.DownloadManager;
+import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.FileDownloadListener;
+import com.tencent.mmkv.MMKV;
 
 import java.io.File;
 
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initData();
 
 
-        String preDownloadUrl = getStringData("url");
+        String preDownloadUrl = getStringData("download_url");
         String threadNum = getStringData("threadNum");
         if (!TextUtils.isEmpty(preDownloadUrl)) {
 
@@ -184,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 start();
                 break;
             case R.id.btExit:
+//                test();
                 finish();
                 break;
             case R.id.btClear:
@@ -204,6 +207,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void test() {
+        String rootDir = MMKV.initialize(this);
+        Log.i("=====","====="+"mmkv root: " + rootDir);
+        MMKV kv = MMKV.defaultMMKV();
+        SharedPreferences sp = getSharedPreferences("aa", Context.MODE_PRIVATE);
+
+        DownloadRecord downloadRecord=new DownloadRecord(1000,2);
+        DownloadRecord.FileRecord fileRecord=new DownloadRecord.FileRecord();
+        fileRecord.setStartPoint(0);
+        fileRecord.setDownloadLength(100);
+        fileRecord.setEndPoint(2000);
+        downloadRecord.setUniqueId(hwUrl);
+        downloadRecord.setDownloadUrl(hwUrl);
+        downloadRecord.addFileRecordList(fileRecord);
+
+        downloadRecord=new DownloadRecord(1000,2);
+        fileRecord=new DownloadRecord.FileRecord();
+        fileRecord.setStartPoint(0);
+        fileRecord.setDownloadLength(100);
+        fileRecord.setEndPoint(2000);
+        downloadRecord.setUniqueId(hwUrl);
+        downloadRecord.setDownloadUrl(hwUrl);
+        downloadRecord.addFileRecordList(fileRecord);
+        long preTime = System.currentTimeMillis();
+        for (int i = 0; i < 10000; i++) {
+//            kv.encode(downloadRecord.getUniqueId(),downloadRecord.toJson());
+
+//            sp.edit().putString(downloadRecord.getUniqueId(),downloadRecord.toJson()).commit();
+        }
+        Log.i("=====","====="+(System.currentTimeMillis()-preTime));
+    }
+
     private void copyUrl(String url) {
         if (etUrl == null) {
             return;
@@ -218,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         String downloadUrl = etUrl.getText().toString();
-        setStringData("url", downloadUrl);
+        setStringData("download_url", downloadUrl);
 
         int threadNum = sbThreadNum.getProgress();
         if (threadNum <= 0) {
@@ -275,13 +310,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onDelete() {
                 tvResult.setText("删除下载文件");
-                setStringData("url", "");
+                setStringData("download_url", "");
             }
 
             @Override
             public void onError() {
                 tvResult.setText("下载error");
-                setStringData("url", "");
+                setStringData("download_url", "");
             }
         });
     }

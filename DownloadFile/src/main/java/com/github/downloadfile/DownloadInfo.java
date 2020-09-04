@@ -110,7 +110,6 @@ public class DownloadInfo {
             // TODO: 2020/8/31 根据唯一标示去删除 ,方便后续扩展
             return;
         }
-        setStatus(changeStatus);
         for (TaskInfo info : taskInfoList) {
             info.changeStatus(changeStatus);
         }
@@ -119,6 +118,7 @@ public class DownloadInfo {
                 pause();
                 break;
         }
+
     }
 
     private void error() {
@@ -213,6 +213,7 @@ public class DownloadInfo {
     }
 
     private synchronized void progress(final long downloadSize) {
+        saveDownloadCacheInfo(downloadRecord);
         final long progress = downloadProgress.addAndGet(downloadSize);
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
@@ -324,8 +325,10 @@ public class DownloadInfo {
                     downloadRecord = new DownloadRecord(contentLength, 1);
                 } else {
                     int threadNum = downloadConfig.getThreadNum();
-                    /*读取本地缓存配置*/
-                    downloadRecord = DownloadHelper.get().getRecord(fileUrl);
+                    /*先判断内存是否存在数据，不存在再读取本地缓存配置*/
+                    if(downloadRecord==null){
+                        downloadRecord = DownloadHelper.get().getRecord(fileUrl);
+                    }
                     Log.i("=====", "=====toJson=" + downloadRecord.toJson());
                     // TODO: 2020/8/28
                     /*如果本地缓存配置有数据，但是下载的文件不存在，则删除本地配置*/
@@ -379,7 +382,10 @@ public class DownloadInfo {
                 public void readLength(long readLength) {
                     long currentProgress = record.getDownloadLength() + readLength;
                     record.setDownloadLength(currentProgress);
-                    saveDownloadCacheInfo(downloadRecord);
+                    int status = getStatus();
+                    if(status==STATUS_PAUSE||status==STATUS_ERROR||status==STATUS_DELETE){
+                        return;
+                    }
                     progress(readLength);
                 }
 
@@ -452,7 +458,7 @@ public class DownloadInfo {
         error();
     }
 
-
+    private long preSaveDownloadRecordTime;
     /*边下载边保存当前下载进度*/
     private void saveDownloadCacheInfo(DownloadRecord downloadRecord) {
         if (downloadRecord == null) {
@@ -462,6 +468,11 @@ public class DownloadInfo {
         if (status == STATUS_ERROR) {
             return;
         }
+        long nowTime=System.currentTimeMillis();
+        if(nowTime-preSaveDownloadRecordTime<1200){
+            return;
+        }
+        preSaveDownloadRecordTime=nowTime;
         DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl().hashCode()+"");
     }
 }
