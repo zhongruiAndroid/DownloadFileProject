@@ -1,5 +1,7 @@
 package com.test.downloadfileproject;
 
+import android.support.v4.util.LruCache;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -31,6 +33,14 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
+    }
+    @Test
+    public void sd() {
+        LruCache<String,String>map=new LruCache<>(2);
+        map.put("1","1");
+        map.put("1","2");
+        System.out.println(map.size());
+        System.out.println(map.get("1"));
     }
 
     @Test

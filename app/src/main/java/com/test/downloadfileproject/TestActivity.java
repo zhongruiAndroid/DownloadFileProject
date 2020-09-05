@@ -109,7 +109,7 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onSuccess(File file) {
                 long timeInterval = System.currentTimeMillis() - startTime;
-                tvResult.setText("下载完成耗时："+timeInterval*1f/1000+"s");
+                tvResult.setText("下载完成耗时："+timeInterval*1f/1000+"s"+"\n文件路径:"+file.getAbsolutePath());
             }
 
             @Override

@@ -53,6 +53,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
     private TextView tvThreadNum;
     private AppCompatSeekBar sbThreadNum;
     private TextView tvResult;
+    private TextView tvFileSize;
 
 
     private DownloadInfo downloadInfo;
@@ -112,6 +113,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
     private void initView() {
 
 
+        tvFileSize = findViewById(R.id.tvFileSize);
         etUrl = findViewById(R.id.etUrl);
         btClear = findViewById(R.id.btClear);
         btPaste = findViewById(R.id.btPaste);
@@ -237,6 +239,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
         downloadInfo = FileDownloadManager.download(config.build(), new FileDownloadListener() {
             @Override
             public void onConnect(long totalSize) {
+                tvFileSize.setText("文件大小:"+(totalSize*1f/1014/1014)+"mb");
                 pbProgress.setMax((int) totalSize);
                 tvResult.setText("连接中");
                 downloadTime=System.currentTimeMillis();

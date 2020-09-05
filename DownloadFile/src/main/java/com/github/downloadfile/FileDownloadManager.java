@@ -25,7 +25,7 @@ public class FileDownloadManager {
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {
         DownloadInfo downloadInfo= downloadMap.get(config.getFileDownloadUrl());
-        if(downloadInfo==null){
+        if(downloadInfo==null||config.isIfExistAgainDownload()||config.isReDownload()){
             downloadInfo = new DownloadInfo(config, listener);
             downloadMap.put(config.getFileDownloadUrl(),downloadInfo);
         }
