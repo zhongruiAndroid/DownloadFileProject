@@ -211,7 +211,7 @@ public class DownloadInfo {
         localCacheSize = 0;
     }
 
-    private synchronized void progress(final long downloadSize) {
+    private  void progress(final long downloadSize) {
         saveDownloadCacheInfo(downloadRecord);
         final long progress = downloadProgress.addAndGet(downloadSize);
         DownloadHelper.get().getHandler().post(new Runnable() {
