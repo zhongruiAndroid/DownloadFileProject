@@ -8,7 +8,7 @@ import com.github.downloadfile.listener.FileDownloadListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DownloadManager {
+public class FileDownloadManager {
     private static Context context;
 
     public static Context getContext() {
@@ -21,7 +21,7 @@ public class DownloadManager {
     public static void init(Context ctx) {
         context = ctx;
     }
-    public static LruCache<String,DownloadInfo> downloadMap =new LruCache<String,DownloadInfo>(6);
+    private static LruCache<String,DownloadInfo> downloadMap =new LruCache<String,DownloadInfo>(6);
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {
         DownloadInfo downloadInfo= downloadMap.get(config.getFileDownloadUrl());
@@ -35,5 +35,17 @@ public class DownloadManager {
     public static DownloadInfo download(String url, FileDownloadListener listener) {
         DownloadConfig config=new DownloadConfig.Builder().setFileDownloadUrl(url).build();
         return download(config,listener);
+    }
+    public static void pauseDownload(DownloadInfo downloadInfo){
+        if(downloadInfo==null){
+            return;
+        }
+        downloadInfo.pauseDownload();
+    }
+    public static void deleteDownload(DownloadInfo downloadInfo){
+        if(downloadInfo==null){
+            return;
+        }
+        downloadInfo.deleteDownload();
     }
 }

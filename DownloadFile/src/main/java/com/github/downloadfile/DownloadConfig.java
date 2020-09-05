@@ -97,7 +97,7 @@ public class DownloadConfig implements Serializable {
         private int threadNum = 2;
 
         public Builder() {
-            context = DownloadManager.getContext();
+            context = FileDownloadManager.getContext();
             boolean sdCardCanReadAndWrite = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
             File useDownloadFile = context.getExternalFilesDir("download");
             if (sdCardCanReadAndWrite && useDownloadFile != null) {

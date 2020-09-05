@@ -7,7 +7,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import com.github.downloadfile.DownloadManager;
+import com.github.downloadfile.FileDownloadManager;
 import com.github.downloadfile.bean.DownloadRecord;
 
 import java.io.Closeable;
@@ -85,7 +85,7 @@ public class DownloadHelper {
     private final String sp_file_name = "zr_multi_download_sp";
 
     public DownloadRecord getRecord(String downloadFileUrl) {
-        SharedPreferences sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+        SharedPreferences sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         String downloadRecord = sp.getString(downloadFileUrl.hashCode() + "", null);
         return DownloadRecord.fromJson(downloadRecord);
     }
@@ -96,14 +96,14 @@ public class DownloadHelper {
         }
         String json = downloadRecord.toJson();
         if (sp == null) {
-            sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+            sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
         sp.edit().putString(downloadFileUrl.hashCode() + "", json).commit();
     }
 
     public void clearRecord(String downloadFileUrl) {
         if (sp == null) {
-            sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+            sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
         sp.edit().remove(downloadFileUrl.hashCode() + "").commit();
     }

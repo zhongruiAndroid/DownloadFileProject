@@ -1,7 +1,6 @@
 package com.github.downloadfile;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
@@ -107,7 +106,7 @@ public class DownloadInfo {
             return;
         }
         if (getStatus() == STATUS_SUCCESS) {
-            // TODO: 2020/8/31 根据唯一标示去删除 ,方便后续扩展
+            // TODO:
             return;
         }
         for (TaskInfo info : taskInfoList) {
@@ -305,7 +304,7 @@ public class DownloadInfo {
                     error();
                     return;
                 }
-                if (!DownloadHelper.hasFreeSpace(DownloadManager.getContext(), contentLength)) {
+                if (!DownloadHelper.hasFreeSpace(FileDownloadManager.getContext(), contentLength)) {
                     //储存空间不足
                     error();
                     return;
@@ -317,7 +316,7 @@ public class DownloadInfo {
             } else if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
                 /*支持范围下载*/
                 contentLength = getContentLength(httpURLConnection);
-                if (!DownloadHelper.hasFreeSpace(DownloadManager.getContext(), contentLength)) {
+                if (!DownloadHelper.hasFreeSpace(FileDownloadManager.getContext(), contentLength)) {
                     error();
                     return;
                 }
@@ -478,5 +477,15 @@ public class DownloadInfo {
         }
         preSaveDownloadRecordTime=nowTime;
         DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl());
+    }
+    public String getFileDownloadUrl(){
+        if(downloadConfig==null){
+            return "";
+        }
+        return downloadConfig.getFileDownloadUrl();
+    }
+
+    public DownloadConfig getDownloadConfig() {
+        return downloadConfig;
     }
 }
