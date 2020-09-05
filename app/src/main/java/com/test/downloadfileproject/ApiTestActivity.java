@@ -95,6 +95,13 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
             Long second = progressByUrl.second;
             pbProgress.setMax(Integer.valueOf(second + ""));
             pbProgress.setProgress(Integer.valueOf(progressByUrl.first + ""));
+
+            tvFileSize.setText("文件大小:"+(second*1f/1014/1014)+"mb");
+
+            tvProgress.setText(progressByUrl.first + "/" + second);
+
+            bt.setText("继续上次下载");
+
         } else {
             copy(this, nbyUrl);
             etUrl.setText(nbyUrl);
