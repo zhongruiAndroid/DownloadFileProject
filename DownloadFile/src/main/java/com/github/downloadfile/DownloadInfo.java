@@ -250,6 +250,9 @@ public class DownloadInfo {
         return -1;
     }
     public void download(){
+        if(downloadConfig==null){
+            getDownloadListener().onError();
+        }
         DownloadHelper.get().getExecutorService().execute(new Runnable() {
             @Override
             public void run() {
@@ -329,7 +332,7 @@ public class DownloadInfo {
                     if(downloadRecord==null){
                         downloadRecord = DownloadHelper.get().getRecord(fileUrl);
                     }
-                    Log.i("=====", "=====toJson=" + downloadRecord.toJson());
+//                    Log.i("=====", "=====toJson=" + downloadRecord.toJson());
                     // TODO: 2020/8/28
                     /*如果本地缓存配置有数据，但是下载的文件不存在，则删除本地配置*/
                     if (downloadConfig.getTempSaveFile() != null && !downloadConfig.getTempSaveFile().exists()) {
@@ -359,13 +362,14 @@ public class DownloadInfo {
 
     /*开始准备下载*/
     private void prepareDownload() {
+        List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         /*如果重新下载，忽略之前的下载进度*/
         if (downloadConfig.isReDownload()) {
             DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
             DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());
+            fileRecordList.clear();
         }
         int threadNum = downloadConfig.getThreadNum();
-        final List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
         setStatus(STATUS_PROGRESS);
         for (int i = 0; i < threadNum; i++) {
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
@@ -440,7 +444,7 @@ public class DownloadInfo {
             }
         }
         /*所有taskinfo都可删除才是真的可以执行删除操作*/
-        // TODO: 2020/8/31 根据唯一标示去删除 ,方便后续扩展
+        // TODO: 2020/8/31
         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
         DownloadHelper.deleteFile(downloadConfig.getSaveFile());
         DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());

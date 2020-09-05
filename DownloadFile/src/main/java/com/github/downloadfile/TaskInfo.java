@@ -79,7 +79,6 @@ public class TaskInfo implements Runnable {
         RandomAccessFile randomAccessFile = null;
         if (TextUtils.isEmpty(fileUrl) || saveFile == null) {
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
-            Log.i("=====", "=====fail333");
             downloadListener.fail();
             return;
         }
@@ -88,7 +87,6 @@ public class TaskInfo implements Runnable {
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);
-            Log.i("=====", startPoint + "===point2===" + endPoint);
             if(endPoint!=0){
                 httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
             }
@@ -104,7 +102,7 @@ public class TaskInfo implements Runnable {
                 }
                 inputStream = httpURLConnection.getInputStream();
 
-                byte[] buff = new byte[2048 * 15];
+                byte[] buff = new byte[2048 * 10];
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
                 randomAccessFile = new RandomAccessFile(saveFile, "rw");
@@ -113,7 +111,7 @@ public class TaskInfo implements Runnable {
                     if (currentStatus == DownloadInfo.STATUS_ERROR || currentStatus == DownloadInfo.STATUS_PAUSE) {
                         return;
                     }
-                    /*外部通知删除时，回调给外部*/
+                    /*外部通知删除时，回调给外部现在可以执行删除操作了*/
                     if (currentStatus == DownloadInfo.STATUS_DELETE) {
                         downloadListener.needDelete();
                         return;
@@ -127,13 +125,11 @@ public class TaskInfo implements Runnable {
                 downloadListener.readComplete();
             } else {
                 setCurrentStatus(DownloadInfo.STATUS_ERROR);
-                Log.i("=====", startPoint + "===" + endPoint + "=====fail11111111==" + responseCode);
                 downloadListener.fail();
             }
         } catch (Exception e) {
             e.printStackTrace();
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
-            Log.i("=====", "=====fail22222222");
             downloadListener.fail();
         } finally {
             DownloadHelper.close(randomAccessFile);
