@@ -90,15 +90,15 @@ public class DownloadHelper {
         return DownloadRecord.fromJson(downloadRecord);
     }
 
-    public void saveRecord(DownloadRecord downloadRecord, String key) {
-        if (downloadRecord == null || TextUtils.isEmpty(key)) {
+    public void saveRecord(DownloadRecord downloadRecord, String downloadFileUrl) {
+        if (downloadRecord == null || TextUtils.isEmpty(downloadFileUrl)) {
             return;
         }
         String json = downloadRecord.toJson();
         if (sp == null) {
             sp = DownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
         }
-        sp.edit().putString(key, json).commit();
+        sp.edit().putString(downloadFileUrl.hashCode() + "", json).commit();
     }
 
     public void clearRecord(String downloadFileUrl) {

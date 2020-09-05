@@ -473,6 +473,6 @@ public class DownloadInfo {
             return;
         }
         preSaveDownloadRecordTime=nowTime;
-        DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl().hashCode()+"");
+        DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl());
     }
 }

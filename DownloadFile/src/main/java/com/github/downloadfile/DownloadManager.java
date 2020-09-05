@@ -1,6 +1,7 @@
 package com.github.downloadfile;
 
 import android.content.Context;
+import android.support.v4.util.LruCache;
 
 import com.github.downloadfile.listener.FileDownloadListener;
 
@@ -20,13 +21,13 @@ public class DownloadManager {
     public static void init(Context ctx) {
         context = ctx;
     }
-    static Map<String,DownloadInfo> map=new HashMap<String,DownloadInfo>();
+    public static LruCache<String,DownloadInfo> downloadMap =new LruCache<String,DownloadInfo>(6);
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {
-        DownloadInfo downloadInfo=map.get(config.getFileDownloadUrl());
+        DownloadInfo downloadInfo= downloadMap.get(config.getFileDownloadUrl());
         if(downloadInfo==null){
             downloadInfo = new DownloadInfo(config, listener);
-            map.put(config.getFileDownloadUrl(),downloadInfo);
+            downloadMap.put(config.getFileDownloadUrl(),downloadInfo);
         }
         downloadInfo.download();
         return downloadInfo;
