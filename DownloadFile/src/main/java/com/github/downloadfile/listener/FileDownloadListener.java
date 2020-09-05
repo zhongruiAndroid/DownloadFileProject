@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface FileDownloadListener {
     void onConnect(long totalSize);
-    void onSpeed(float speedBySecond);
+    void onSpeed(float speedKbBySecond);
     void onProgress(long progress,long totalSize);
     void onSuccess(File file);
     void onPause();
