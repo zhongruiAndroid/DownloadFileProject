@@ -215,6 +215,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void start() {
+        bt.setText("开始下载(下载之前在底下填写下载地址)");
         if (TextUtils.isEmpty(etUrl.getText())) {
             showToast("请填写下载地址");
             return;
