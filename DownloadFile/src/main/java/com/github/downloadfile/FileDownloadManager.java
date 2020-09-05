@@ -47,5 +47,8 @@ public class FileDownloadManager {
             return;
         }
         downloadInfo.deleteDownload();
+        if(downloadMap!=null){
+            downloadMap.remove(downloadInfo.getFileDownloadUrl());
+        }
     }
 }

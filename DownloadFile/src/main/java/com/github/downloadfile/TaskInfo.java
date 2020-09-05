@@ -47,10 +47,14 @@ public class TaskInfo implements Runnable {
         }
         if (status == DownloadInfo.STATUS_DELETE) {
             if (currentStatus != DownloadInfo.STATUS_PROGRESS) {
+                /*通知外部之前必须改变自己的状态*/
+                setCurrentStatus(status);
                 downloadListener.needDelete();
+                return;
             }
         }
         setCurrentStatus(status);
+
     }
 
     private void setCurrentStatus(int currentStatus) {
@@ -87,13 +91,13 @@ public class TaskInfo implements Runnable {
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);
-            if(endPoint!=0){
+            if (endPoint != 0) {
                 httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
             }
             httpURLConnection.connect();
             int responseCode = httpURLConnection.getResponseCode();
 
-            if (responseCode == HttpURLConnection.HTTP_PARTIAL||responseCode == HttpURLConnection.HTTP_OK) {
+            if (responseCode == HttpURLConnection.HTTP_PARTIAL || responseCode == HttpURLConnection.HTTP_OK) {
                 int contentLength = httpURLConnection.getContentLength();
                 if (contentLength == 0) {
                     setCurrentStatus(DownloadInfo.STATUS_SUCCESS);

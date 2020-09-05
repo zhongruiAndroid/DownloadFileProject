@@ -252,6 +252,9 @@ public class DownloadInfo {
         if(downloadConfig==null){
             getDownloadListener().onError();
         }
+        if(getStatus()==STATUS_PROGRESS||getStatus()==STATUS_CONNECT){
+            return;
+        }
         DownloadHelper.get().getExecutorService().execute(new Runnable() {
             @Override
             public void run() {

@@ -77,14 +77,16 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private long startTime;
     private void startDownload() {
-        if(cb.isChecked()){
+        if(cb.isChecked()&&download!=null){
             DownloadHelper.deleteFile(download.getDownloadConfig().getSaveFile());
         }
         /*默认开启2个线程下载*/
         DownloadConfig.Builder config=new DownloadConfig.Builder();
         config.setFileDownloadUrl(nbyUrl).setIfExistAgainDownload(cb.isChecked()).setNeedSpeed(true);
         /*如果不需要显示下载速度，FileDownloadManager.download直接传入下载地址即可*/
+        startTime=System.currentTimeMillis();
         download = FileDownloadManager.download(config.build(), new FileDownloadListener() {
             @Override
             public void onConnect(long totalSize) {
@@ -100,22 +102,25 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
             }
             @Override
             public void onProgress(long progress, long totalSize) {
+                tvResult.setText("下载中");
                 tvProgress.setText(progress+"/"+totalSize);
                 pbProgress.setProgress((int) progress);
             }
             @Override
             public void onSuccess(File file) {
-                tvResult.setText("下载完成");
+                long timeInterval = System.currentTimeMillis() - startTime;
+                tvResult.setText("下载完成耗时："+timeInterval*1f/1000+"s");
             }
 
             @Override
             public void onPause() {
                 tvResult.setText("暂停下载");
             }
-
             @Override
             public void onDelete() {
                 tvResult.setText("删除文件");
+                tvProgress.setText("0/0");
+                pbProgress.setProgress(0);
             }
             @Override
             public void onError() {

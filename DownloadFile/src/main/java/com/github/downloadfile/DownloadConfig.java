@@ -46,7 +46,6 @@ public class DownloadConfig implements Serializable {
                     index = fileDownloadUrl.lastIndexOf("/");
                     fileName = fileDownloadUrl.substring(index);
                 }
-                Log.i("=====","====="+fileName);
                 builder.setSaveFile(new File(builder.downloadFileSavePath, fileName));
             }
         } else {
