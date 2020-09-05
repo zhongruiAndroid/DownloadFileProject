@@ -25,10 +25,8 @@ import android.widget.Toast;
 import com.github.downloadfile.DownloadConfig;
 import com.github.downloadfile.DownloadInfo;
 import com.github.downloadfile.DownloadManager;
-import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.FileDownloadListener;
-import com.tencent.mmkv.MMKV;
 
 import java.io.File;
 
@@ -44,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvSpeed;
     private Button btPause;
     private Button btDelete;
-    private Button btExit;
     private Button btCopyHW;
     private Button btCopyMZ;
     private Button btCopyRE;
@@ -124,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvSpeed = findViewById(R.id.tvSpeed);
         btPause = findViewById(R.id.btPause);
         btDelete = findViewById(R.id.btDelete);
-        btExit = findViewById(R.id.btExit);
         btCopyHW = findViewById(R.id.btCopyHW);
         btCopyMZ = findViewById(R.id.btCopyMZ);
         btCopyRE = findViewById(R.id.btCopyRE);
@@ -142,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bt.setOnClickListener(this);
         btPause.setOnClickListener(this);
         btDelete.setOnClickListener(this);
-        btExit.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btCopyHW.setOnClickListener(this);
         btCopyMZ.setOnClickListener(this);
@@ -185,10 +180,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.bt:
                 start();
                 break;
-            case R.id.btExit:
-//                test();
-                finish();
-                break;
             case R.id.btClear:
                 etUrl.setText("");
                 break;
@@ -206,39 +197,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-
-    private void test() {
-        String rootDir = MMKV.initialize(this);
-        Log.i("=====","====="+"mmkv root: " + rootDir);
-        MMKV kv = MMKV.defaultMMKV();
-        SharedPreferences sp = getSharedPreferences("aa", Context.MODE_PRIVATE);
-
-        DownloadRecord downloadRecord=new DownloadRecord(1000,2);
-        DownloadRecord.FileRecord fileRecord=new DownloadRecord.FileRecord();
-        fileRecord.setStartPoint(0);
-        fileRecord.setDownloadLength(100);
-        fileRecord.setEndPoint(2000);
-        downloadRecord.setUniqueId(hwUrl);
-        downloadRecord.setDownloadUrl(hwUrl);
-        downloadRecord.addFileRecordList(fileRecord);
-
-        downloadRecord=new DownloadRecord(1000,2);
-        fileRecord=new DownloadRecord.FileRecord();
-        fileRecord.setStartPoint(0);
-        fileRecord.setDownloadLength(100);
-        fileRecord.setEndPoint(2000);
-        downloadRecord.setUniqueId(hwUrl);
-        downloadRecord.setDownloadUrl(hwUrl);
-        downloadRecord.addFileRecordList(fileRecord);
-        long preTime = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-//            kv.encode(downloadRecord.getUniqueId(),downloadRecord.toJson());
-
-//            sp.edit().putString(downloadRecord.getUniqueId(),downloadRecord.toJson()).commit();
-        }
-        Log.i("=====","====="+(System.currentTimeMillis()-preTime));
-    }
-
     private void copyUrl(String url) {
         if (etUrl == null) {
             return;

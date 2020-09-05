@@ -69,13 +69,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="删除" />
-                <Button
-                    android:id="@+id/btExit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="退出app(测试下载中退出app再进入断点下载)"
-                    android:textSize="10sp" />
-
             </LinearLayout>
 
             <android.support.v7.widget.AppCompatCheckBox
