@@ -107,7 +107,7 @@ public class TaskInfo implements Runnable {
                 byte[] buff = new byte[2048 * 15];
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
-                randomAccessFile = new RandomAccessFile(saveFile, "rwd");
+                randomAccessFile = new RandomAccessFile(saveFile, "rw");
                 randomAccessFile.seek(startPoint);
                 while ((len = bis.read(buff)) != -1) {
                     if (currentStatus == DownloadInfo.STATUS_ERROR || currentStatus == DownloadInfo.STATUS_PAUSE) {
