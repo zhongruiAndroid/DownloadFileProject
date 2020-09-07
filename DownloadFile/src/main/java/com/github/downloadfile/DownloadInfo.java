@@ -144,6 +144,10 @@ public class DownloadInfo {
             return;
         }
         setStatus(STATUS_PAUSE);
+        /*手动暂停时把内存的缓存信息保存至本地*/
+        if(downloadRecord!=null){
+            saveDownloadCacheInfo(downloadRecord);
+        }
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
