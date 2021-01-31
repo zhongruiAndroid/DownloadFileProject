@@ -245,12 +245,8 @@ public class DownloadInfo {
     }
 
     private long getContentLength(HttpURLConnection httpURLConnection) {
-        try {
-            String value = httpURLConnection.getHeaderField("content-length");
-            return Long.parseLong(value);
-        } catch (Exception e) {
-        }
-        return -1;
+        String value = httpURLConnection.getHeaderField("content-length");
+        return Long.parseLong(value);
     }
     public void download(){
         if(downloadConfig==null){
@@ -359,15 +355,14 @@ public class DownloadInfo {
                     }
                 }
             }
+            if (httpURLConnection != null) {
+                httpURLConnection.disconnect();
+            }
             /*开始准备下载*/
             prepareDownload();
         } catch (Exception e) {
             e.printStackTrace();
             error();
-        } finally {
-            if (httpURLConnection != null) {
-                httpURLConnection.disconnect();
-            }
         }
 
     }
