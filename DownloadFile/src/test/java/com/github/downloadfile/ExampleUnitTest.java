@@ -118,4 +118,31 @@ public class ExampleUnitTest {
             e.printStackTrace();
         }
     }
+    @Test
+    public void asdf() {
+        long l = System.currentTimeMillis();
+        String encode = MD5Coder.encode("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+        for (int i = 0; i < 1000; i++) {
+            MD5Coder.encode("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+        }
+        long l2 = System.currentTimeMillis();
+        System.out.println(l2-l);
+        System.out.println(encode);
+
+    }
+    @Test
+    public void as2df() {
+        long l = System.currentTimeMillis();
+        String encode2 = MD5Coder.md5("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+        for (int i = 0; i < 1000; i++) {
+            MD5Coder.md5("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+        }
+        long l2 = System.currentTimeMillis();
+        System.out.println(l2-l);
+        System.out.println(encode2);
+
+        //1d269889fd5d2cc197221f63db4d7343
+        //1d269889fd5d2cc197221f63db4d7343
+
+    }
 }
