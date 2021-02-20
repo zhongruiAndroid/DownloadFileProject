@@ -6,7 +6,10 @@ import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.FileDownloadListener;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -252,9 +255,11 @@ public class DownloadInfo {
         if(downloadConfig==null){
             getDownloadListener().onError();
         }
-        if(getStatus()==STATUS_PROGRESS||getStatus()==STATUS_CONNECT){
+        if(getStatus()==STATUS_CONNECT){
             return;
         }
+        /*需要判断是否存在下载的任务*/
+        // TODO: 2021/2/20
         DownloadHelper.get().getExecutorService().execute(new Runnable() {
             @Override
             public void run() {
@@ -313,6 +318,8 @@ public class DownloadInfo {
                     return;
                 }
                 connect(contentLength);
+                /*如果本地存在之前下载一部分的文件，先删除*/
+
                 /*单线程下载*/
                 downloadRecord = new DownloadRecord(contentLength, 1);
 
@@ -355,14 +362,32 @@ public class DownloadInfo {
                     }
                 }
             }
-            if (httpURLConnection != null) {
-                httpURLConnection.disconnect();
+
+            InputStream inputStream = null;
+            // 随机访问文件，可以指定断点续传的起始位置
+            BufferedInputStream bis = null;
+            RandomAccessFile randomAccessFile = null;
+            inputStream = httpURLConnection.getInputStream();
+
+            byte[] buff = new byte[2048 * 10];
+            int len = 0;
+            bis = new BufferedInputStream(inputStream);
+            randomAccessFile = new RandomAccessFile(saveFile, "rw");
+//            randomAccessFile.seek(startPoint);
+
+            while ((len = bis.read(buff)) != -1) {
+                randomAccessFile.write(buff, 0, len);
+                downloadListener.readLength(len);
             }
             /*开始准备下载*/
             prepareDownload();
         } catch (Exception e) {
             e.printStackTrace();
             error();
+        }finally {
+            if (httpURLConnection != null) {
+                httpURLConnection.disconnect();
+            }
         }
 
     }
