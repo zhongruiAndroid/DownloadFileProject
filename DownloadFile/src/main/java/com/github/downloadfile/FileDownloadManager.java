@@ -1,34 +1,31 @@
 package com.github.downloadfile;
 
+import android.app.Application;
 import android.content.Context;
-import android.support.v4.util.LruCache;
 
 import com.github.downloadfile.listener.FileDownloadListener;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class FileDownloadManager {
     private static Context context;
 
     public static Context getContext() {
         if (context == null) {
-            throw new IllegalStateException("please call DownloadManager.init(context)");
+            throw new IllegalStateException("please call FileDownloadManager.init(context)");
         }
         return context;
     }
 
-    public static void init(Context ctx) {
-        context = ctx;
+    public static void init(Application application) {
+        if(context!=null){
+            return;
+        }
+        context = application.getApplicationContext();
+        AppStateUtils.register(application);
     }
-    private static LruCache<String,DownloadInfo> downloadMap =new LruCache<String,DownloadInfo>(6);
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {
-        DownloadInfo downloadInfo= downloadMap.get(config.getFileDownloadUrl());
-        if(downloadInfo==null||config.isIfExistAgainDownload()||config.isReDownload()){
-            downloadInfo = new DownloadInfo(config, listener);
-            downloadMap.put(config.getFileDownloadUrl(),downloadInfo);
-        }
+        DownloadInfo downloadInfo= new DownloadInfo(config, listener);
         downloadInfo.download();
         return downloadInfo;
     }
@@ -43,12 +40,12 @@ public class FileDownloadManager {
         downloadInfo.pauseDownload();
     }
     public static void deleteDownload(DownloadInfo downloadInfo){
+        deleteDownload(downloadInfo,false);
+    }
+    public static void deleteDownload(DownloadInfo downloadInfo,boolean deleteTaskAndFile){
         if(downloadInfo==null){
             return;
         }
-        downloadInfo.deleteDownload();
-        if(downloadMap!=null){
-            downloadMap.remove(downloadInfo.getFileDownloadUrl());
-        }
+        downloadInfo.deleteDownload(deleteTaskAndFile);
     }
 }

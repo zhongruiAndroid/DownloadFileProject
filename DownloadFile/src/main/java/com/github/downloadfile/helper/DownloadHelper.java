@@ -2,18 +2,22 @@ package com.github.downloadfile.helper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import com.github.downloadfile.DownloadConfig;
 import com.github.downloadfile.FileDownloadManager;
 import com.github.downloadfile.bean.DownloadRecord;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,69 +88,94 @@ public class DownloadHelper {
 
     private final String sp_file_name = "zr_multi_download_sp";
 
-    public DownloadRecord getRecord(String downloadFileUrl) {
-        SharedPreferences sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
-        String downloadRecord = sp.getString(downloadFileUrl.hashCode() + "", null);
+    public DownloadRecord getRecord(String unionId) {
+        return getRecord(sp_file_name, unionId);
+    }
+
+    public DownloadRecord getRecord(String spName, String unionId) {
+        if (TextUtils.isEmpty(spName)) {
+            spName = sp_file_name;
+        }
+        SharedPreferences sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
+        String downloadRecord = sp.getString(unionId, null);
         return DownloadRecord.fromJson(downloadRecord);
     }
 
-    public void saveRecord(DownloadRecord downloadRecord, String downloadFileUrl) {
-        if (downloadRecord == null || TextUtils.isEmpty(downloadFileUrl)) {
+    public Map<String, DownloadRecord> getAllRecord() {
+        return getAllRecord(sp_file_name);
+    }
+
+    public Map<String, DownloadRecord> getAllRecord(String spName) {
+        if (TextUtils.isEmpty(spName)) {
+            spName = sp_file_name;
+        }
+        SharedPreferences sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
+        Map<String, String> all = (Map<String, String>) sp.getAll();
+        Map<String, DownloadRecord> map = new HashMap();
+        if (all != null) {
+            for (Map.Entry<String, String> item : all.entrySet()) {
+                String key = item.getKey();
+                DownloadRecord downloadRecord = DownloadRecord.fromJson(item.getValue());
+                map.put(key, downloadRecord);
+            }
+        }
+        return map;
+    }
+
+    public void saveRecord(DownloadRecord downloadRecord) {
+        saveRecord(sp_file_name, downloadRecord);
+    }
+
+    public void saveRecord(String spName, DownloadRecord downloadRecord) {
+        if (TextUtils.isEmpty(spName)) {
+            spName = sp_file_name;
+        }
+        if (downloadRecord == null || TextUtils.isEmpty(downloadRecord.getSaveFilePath())) {
             return;
         }
         String json = downloadRecord.toJson();
         if (sp == null) {
-            sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+            sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
         }
-        sp.edit().putString(downloadFileUrl.hashCode() + "", json).commit();
+        sp.edit().putString(downloadRecord.getUniqueId(), json).commit();
     }
 
-    public void clearRecord(String downloadFileUrl) {
-        if (sp == null) {
-            sp = FileDownloadManager.getContext().getSharedPreferences(sp_file_name, Context.MODE_PRIVATE);
+    public void clearRecordByUnionId(String unionId) {
+        clearRecordByUnionId(sp_file_name, unionId);
+    }
+
+    public void clearRecordByUnionId(String spName, String unionId) {
+        if (TextUtils.isEmpty(spName)) {
+            spName = sp_file_name;
         }
-        sp.edit().remove(downloadFileUrl.hashCode() + "").commit();
+        if (TextUtils.isEmpty(unionId)) {
+            return;
+        }
+        if (sp == null) {
+            sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
+        }
+        sp.edit().remove(unionId).commit();
     }
 
     public static boolean hasFreeSpace(Context context, long downloadSize) {
         if (context == null || downloadSize <= 0) {
             return true;
         }
-        long space;
-        File externalCacheDir = context.getExternalCacheDir();
-        if (externalCacheDir == null) {
-            space = -1;
-        } else {
-            space = externalCacheDir.getFreeSpace();
+        File externalCacheDir = null;
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            externalCacheDir = context.getExternalCacheDir();
         }
-        File filesDir = context.getFilesDir();
-        if (space != -1) {
-            space = Math.min(space, filesDir.getFreeSpace());
-        } else {
-            space = filesDir.getFreeSpace();
+        if (externalCacheDir != null) {
+            return externalCacheDir.getFreeSpace() > downloadSize;
         }
-        return space > downloadSize;
+        externalCacheDir = context.getFilesDir();
+        return externalCacheDir.getFreeSpace() > downloadSize;
     }
 
-    public Pair<Long, Long> getProgressByUrl(String fileDownloadUrl) {
-        DownloadRecord record = getRecord(fileDownloadUrl);
-        if (record == null || record.getFileSize() <= 0) {
-            return new Pair(new Long(0), new Long(0));
-        }
-        List<DownloadRecord.FileRecord> fileRecordList = record.getFileRecordList();
-        if (fileRecordList == null || fileRecordList.isEmpty()) {
-            return new Pair(new Long(0), new Long(0));
-        }
-        long localCacheSize = 0;
-        for (DownloadRecord.FileRecord fileRecord : fileRecordList) {
-            localCacheSize += fileRecord.getDownloadLength();
-        }
-        return new Pair(new Long(localCacheSize), new Long(record.getFileSize()));
-    }
 
 
     /*重新下载时重命名*/
-    /*public static File reDownloadAndRename(File saveFile, int reNum) {
+    public static File reDownloadAndRename(File saveFile, int reNum) {
         String parent = saveFile.getParent();
         String name = saveFile.getName();
         String newName = name.replace(".", "(" + reNum + ").");
@@ -154,7 +183,27 @@ public class DownloadHelper {
         if (!newFile.exists()) {
             return newFile;
         } else {
-            return reDownloadAndRename(saveFile,reNum + 1);
+            return reDownloadAndRename(saveFile, reNum + 1);
         }
-    }*/
+    }
+
+    /*如果返回的数据不为空，则表示本地有下载记录，表示有下载任务*/
+    public static DownloadConfig checkHasDownloadRecord(DownloadConfig config) {
+        DownloadRecord record = DownloadHelper.get().getRecord(config.getDownloadSPName(), config.getUnionId());
+        if (record != null && record.getFileSize() > 0) {
+            int num = 1;
+            File newFile = null;
+            while (record != null && record.getFileSize() > 0) {
+                newFile = DownloadHelper.reDownloadAndRename(config.getSaveFile(), num);
+                num = num + 1;
+                record = DownloadHelper.get().getRecord(config.getDownloadSPName(), newFile.getAbsolutePath().hashCode() + "");
+            }
+            DownloadConfig newConfig = config.copy();
+            newConfig.setSaveFile(newFile);
+            newConfig.setUnionId(newFile.getAbsolutePath().hashCode()+"");
+            return newConfig;
+        } else {
+            return null;
+        }
+    }
 }

@@ -3,12 +3,12 @@ package com.github.downloadfile;
 import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.Serializable;
 
 public class DownloadConfig implements Serializable {
+    private String unionId;
     /*下载成功的文件*/
     private File saveFile;
     /*下载中的文件*/
@@ -23,6 +23,10 @@ public class DownloadConfig implements Serializable {
     private boolean useSourceName;
     /*是否需要用到下载速度*/
     private boolean needSpeed;
+    /*下载缓冲大小*/
+    private int downloadBufferSize;
+    /*下载记录单独保存具体的xml中*/
+    private String downloadSPName;
 
     /*单个任务多线程下载数量*/
     private int threadNum = 2;
@@ -68,11 +72,15 @@ public class DownloadConfig implements Serializable {
         this.ifExistAgainDownload = builder.ifExistAgainDownload;
         this.fileDownloadUrl = builder.fileDownloadUrl;
         this.useSourceName = builder.useSourceName;
+
+        this.unionId = builder.unionId;
         this.needSpeed = builder.needSpeed;
+        this.downloadBufferSize = builder.downloadBufferSize;
         this.threadNum = builder.threadNum;
     }
 
     public static class Builder {
+        private String unionId;
         private Context context;
         private String downloadFileSavePath;
 
@@ -91,6 +99,10 @@ public class DownloadConfig implements Serializable {
         private boolean useSourceName;
         /*是否需要用到下载速度*/
         private boolean needSpeed;
+        /*下载缓冲大小*/
+        private int downloadBufferSize;
+        /*下载记录单独保存具体的xml中*/
+        private String downloadSPName;
 
         /*单个任务多线程下载数量*/
         private int threadNum = 2;
@@ -111,19 +123,12 @@ public class DownloadConfig implements Serializable {
                 saveFile.getParentFile().mkdirs();
             }
             this.saveFile = saveFile;
-            createTempSaveFileBySaveFile(saveFile);
+            this.tempSaveFile = createTempSaveFileBySaveFile(saveFile);
             return this;
         }
 
         public Builder setSaveFile(String filePath, String fileName) {
             setSaveFile(new File(filePath, fileName));
-            return this;
-        }
-
-        public Builder createTempSaveFileBySaveFile(File saveFile) {
-            String name = saveFile.getName();
-            String substring = name.substring(0, name.lastIndexOf("."));
-            this.tempSaveFile = new File(saveFile.getParent(), substring + ".temp");
             return this;
         }
 
@@ -134,6 +139,9 @@ public class DownloadConfig implements Serializable {
 
         public Builder setFileDownloadUrl(String fileDownloadUrl) {
             this.fileDownloadUrl = fileDownloadUrl;
+            if (TextUtils.isEmpty(unionId) && !TextUtils.isEmpty(fileDownloadUrl)) {
+                unionId = fileDownloadUrl.hashCode() + "";
+            }
             return this;
         }
 
@@ -160,14 +168,42 @@ public class DownloadConfig implements Serializable {
             return this;
         }
 
+
+        public void setUnionId(String unionId) {
+            this.unionId = unionId;
+            if (TextUtils.isEmpty(unionId) && !TextUtils.isEmpty(fileDownloadUrl)) {
+                unionId = fileDownloadUrl.hashCode() + "";
+            }
+        }
+
         public DownloadConfig build() {
             DownloadConfig downloadConfig = new DownloadConfig(this);
             return downloadConfig;
+        }
+
+        public void setDownloadBufferSize(int downloadBufferSize) {
+            this.downloadBufferSize = downloadBufferSize;
+        }
+
+        public void setDownloadSPName(String downloadSPName) {
+            this.downloadSPName = downloadSPName;
         }
     }
 
     public File getSaveFile() {
         return saveFile;
+    }
+
+    public void setSaveFile(File saveFile) {
+        this.saveFile = saveFile;
+        this.tempSaveFile = createTempSaveFileBySaveFile(saveFile);
+    }
+
+    public static File createTempSaveFileBySaveFile(File saveFile) {
+        String name = saveFile.getName();
+        String substring = name.substring(0, name.lastIndexOf("."));
+        File tempSaveFile = new File(saveFile.getParent(), substring + ".temp");
+        return tempSaveFile;
     }
 
     public File getTempSaveFile() {
@@ -192,6 +228,45 @@ public class DownloadConfig implements Serializable {
 
     public boolean isNeedSpeed() {
         return needSpeed;
+    }
+    public String getUnionId() {
+        if (TextUtils.isEmpty(unionId) && !TextUtils.isEmpty(fileDownloadUrl)) {
+            unionId = fileDownloadUrl.hashCode() + "";
+        }
+        return unionId;
+    }
+
+    public void setUnionId(String unionId) {
+        this.unionId = unionId;
+    }
+
+    public int getDownloadBufferSize() {
+        if (downloadBufferSize < 20480) {
+            downloadBufferSize = 20480;
+        }
+        return downloadBufferSize;
+    }
+
+    public String getDownloadSPName() {
+        return downloadSPName;
+    }
+    public DownloadConfig copy() {
+        DownloadConfig.Builder builder = new DownloadConfig.Builder();
+        builder.setFileDownloadUrl(this.fileDownloadUrl);
+
+        DownloadConfig build = builder.build();
+
+        build.unionId = this.unionId;
+        build.saveFile = this.saveFile;
+        build.tempSaveFile = this.tempSaveFile;
+        build.reDownload = this.reDownload;
+        build.ifExistAgainDownload = this.ifExistAgainDownload;
+        build.fileDownloadUrl = this.fileDownloadUrl;
+        build.useSourceName = this.useSourceName;
+        build.needSpeed = this.needSpeed;
+        build.downloadBufferSize = this.downloadBufferSize;
+        build.downloadSPName = this.downloadSPName;
+        return build;
     }
 
     public int getThreadNum() {

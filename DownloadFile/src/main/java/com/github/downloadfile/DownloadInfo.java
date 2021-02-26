@@ -98,6 +98,9 @@ public class DownloadInfo {
     }
 
     public void deleteDownload( ) {
+        deleteDownload(false);
+    }
+    public void deleteDownload(boolean f ) {
         changeStatus(STATUS_DELETE);
     }
 
@@ -127,7 +130,7 @@ public class DownloadInfo {
         }
         if (downloadConfig != null) {
             DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
-            DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());
+            DownloadHelper.get().clearRecordByUnionId(downloadConfig.getUnionId());
         }
         setStatus(STATUS_ERROR);
         DownloadHelper.get().getHandler().post(new Runnable() {
@@ -337,14 +340,14 @@ public class DownloadInfo {
                     /*如果重新下载，忽略之前的下载进度*/
                     if (downloadConfig.isReDownload()) {
                         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
-                        DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());
+                        DownloadHelper.get().clearRecordByUnionId(downloadConfig.getUnionId());
                         downloadRecord.getFileRecordList().clear();
                     }
 //                    Log.i("=====", "=====toJson=" + downloadRecord.toJson());
                     // TODO: 2020/8/28
                     /*如果本地缓存配置有数据，但是下载的文件不存在，则删除本地配置*/
                     if (downloadConfig.getTempSaveFile() != null && !downloadConfig.getTempSaveFile().exists()) {
-                        DownloadHelper.get().clearRecord(fileUrl);
+                        DownloadHelper.get().clearRecordByUnionId(downloadConfig.getUnionId());
                         downloadRecord = null;
                     }
                     if (downloadRecord == null || downloadRecord.getFileSize() <= 0 || downloadRecord.getFileSize() != contentLength) {
@@ -430,7 +433,7 @@ public class DownloadInfo {
         }
         /*所有taskinfo下载完才是真的下载完*/
         downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
-        DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());
+        DownloadHelper.get().clearRecordByUnionId(downloadConfig.getUnionId());
         success(downloadConfig.getSaveFile());
     }
 
@@ -449,7 +452,7 @@ public class DownloadInfo {
         // TODO: 2020/8/31
         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
         DownloadHelper.deleteFile(downloadConfig.getSaveFile());
-        DownloadHelper.get().clearRecord(downloadConfig.getFileDownloadUrl());
+        DownloadHelper.get().clearRecordByUnionId(downloadConfig.getUnionId());
         delete();
     }
 
@@ -479,7 +482,7 @@ public class DownloadInfo {
             return;
         }
         preSaveDownloadRecordTime=nowTime;
-        DownloadHelper.get().saveRecord(downloadRecord,downloadConfig.getFileDownloadUrl());
+        DownloadHelper.get().saveRecord(downloadConfig.getDownloadSPName(),downloadRecord);
     }
     public String getFileDownloadUrl(){
         if(downloadConfig==null){
