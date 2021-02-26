@@ -26,9 +26,6 @@ class AppStateUtils {
     private boolean firstIntoApp;
 
 
-    //是否记录最上层的activity
-    private Activity topActivity;
-
     private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks;
 
     private AppStateUtils() {
@@ -65,7 +62,6 @@ class AppStateUtils {
 
             @Override
             public void onActivityResumed(Activity activity) {
-                topActivity = activity;
             }
 
             @Override
@@ -90,12 +86,6 @@ class AppStateUtils {
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-                if (topActivity == null || activity == null) {
-                    return;
-                }
-                if (topActivity == activity && topActivity.getClass().getName().equals(activity.getClass().getName())) {
-                    topActivity = null;
-                }
                 /*只要有activity退出，也保存下载记录，为了保证当前下载页面退出及时保存下载记录*/
                 notifyStateChangeListener(false);
             }
@@ -143,10 +133,6 @@ class AppStateUtils {
 
     public static boolean isBackground() {
         return isFront() == false;
-    }
-
-    public static Activity getTopActivity() {
-        return AppStateUtils.get().topActivity;
     }
 
     public void addAppStateChangeListener(Object object, AppStateChangeListener appStateChangeListener) {
