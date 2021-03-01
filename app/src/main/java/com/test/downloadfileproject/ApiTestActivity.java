@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.github.downloadfile.DownloadConfig;
 import com.github.downloadfile.DownloadInfo;
 import com.github.downloadfile.FileDownloadManager;
+import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.FileDownloadListener;
 
@@ -77,7 +78,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
         long time2=System.currentTimeMillis();
         Log.i("=====","====time2="+(time2-time)/1000f);
 
-        FileDownloadManager.init(this);
+        FileDownloadManager.init(getApplication());
 
 
         initView();
@@ -91,14 +92,13 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
             copy(this, preDownloadUrl);
             etUrl.setText(preDownloadUrl);
             //获取之前下载任务的下载进度以及文件大小
-            Pair<Long, Long> progressByUrl = DownloadHelper.get().getProgressByUrl(preDownloadUrl);
-            Long second = progressByUrl.second;
-            pbProgress.setMax(Integer.valueOf(second + ""));
-            pbProgress.setProgress(Integer.valueOf(progressByUrl.first + ""));
+            DownloadRecord progressByUrl = DownloadHelper.get().getRecord(preDownloadUrl.hashCode()+"");
+            pbProgress.setMax(Integer.valueOf(progressByUrl.getFileSize() + ""));
+            pbProgress.setProgress(Integer.valueOf(progressByUrl.getFileSize() + ""));
 
-            tvFileSize.setText("文件大小:"+(second*1f/1014/1014)+"mb");
+            tvFileSize.setText("文件大小:"+(progressByUrl.getFileSize()*1f/1014/1014)+"mb");
 
-            tvProgress.setText(progressByUrl.first + "/" + second);
+            tvProgress.setText("progressByUrl.first "+ "/" + "second");
 
             bt.setText("继续上次下载");
 

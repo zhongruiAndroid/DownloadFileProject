@@ -129,8 +129,21 @@ public class ExampleUnitTest {
         System.out.println(new Date());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd");
         System.out.println(simpleDateFormat.format(new Date()));
+        teseta();
     }
-
+    public void teseta(){
+        try {
+            System.out.println("try");
+            if(true){
+                System.out.println("return");
+                return;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            System.out.println("finally");
+        }
+    }
     @Test
     public void adasfdasfsdddddf() {
         StringBuilder stringBuilder = new StringBuilder();

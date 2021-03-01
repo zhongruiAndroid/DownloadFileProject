@@ -40,7 +40,7 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
 
 
         //只需要初始化一次，建议放在application中初始化
-        FileDownloadManager.init(this);
+        FileDownloadManager.init(getApplication());
 
 
         setContentView(R.layout.activity_test);
