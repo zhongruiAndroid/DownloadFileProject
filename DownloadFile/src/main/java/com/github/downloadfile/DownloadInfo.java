@@ -327,9 +327,6 @@ public class DownloadInfo {
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
             downloadRecord = null;
 
-        } else {
-            /*因为断点下载的起始位置减一，相应的已经下载的长度也要减一*/
-            downloadRecord.downloadLengthMinusOne();
         }
         /*如果本地有下载记录，但是下载一部分的本地文件已经不存在了*/
         if (downloadRecord!=null&&downloadRecord.hasDownloadRecord()) {
@@ -524,7 +521,6 @@ public class DownloadInfo {
             }
         }
         /*所有taskinfo都可删除才是真的可以执行删除操作*/
-        // TODO: 2020/8/31
         DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
         DownloadHelper.deleteFile(downloadConfig.getSaveFile());
         DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());

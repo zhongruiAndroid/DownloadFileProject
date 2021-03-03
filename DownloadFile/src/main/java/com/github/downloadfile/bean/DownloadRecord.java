@@ -136,19 +136,6 @@ public class DownloadRecord {
         getFileRecordList().add(record);
     }
 
-    public void downloadLengthMinusOne() {
-        List<FileRecord> fileRecordList = getFileRecordList();
-        for (FileRecord record : fileRecordList) {
-            if (record == null || record.getDownloadLength() <= 0) {
-                continue;
-            }
-            record.setDownloadLength(record.getDownloadLength() - 1);
-            record.setStartPoint(record.getDownloadLength());
-            if (record.getStartPoint() < 0) {
-                record.setStartPoint(0);
-            }
-        }
-    }
 
     /*如果有记录下载记录*/
     public boolean hasDownloadRecord() {
