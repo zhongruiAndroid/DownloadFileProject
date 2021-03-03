@@ -30,6 +30,11 @@ public class DownloadRecord {
     /*第一次初始化下载*/
     public DownloadRecord(long fileSize, int threadNum) {
         this.fileSize = fileSize;
+        setSingleThreadDownload(fileSize, threadNum);
+    }
+
+    public void setSingleThreadDownload(long fileSize, int threadNum) {
+        this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
         long average = fileSize / threadNum;
         for (int i = 0; i < threadNum; i++) {
@@ -144,8 +149,9 @@ public class DownloadRecord {
             }
         }
     }
+
     /*如果有记录下载记录*/
-    public boolean hasDownloadRecord(){
+    public boolean hasDownloadRecord() {
         List<FileRecord> fileRecordList = getFileRecordList();
         for (FileRecord record : fileRecordList) {
             if (record == null || record.getDownloadLength() <= 0) {

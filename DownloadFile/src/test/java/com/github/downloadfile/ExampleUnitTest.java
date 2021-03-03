@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,46 +26,51 @@ public class ExampleUnitTest {
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
     }
+
     @Test
     public void sfs() {
-        AtomicLong atomicLong=new AtomicLong(0);
-        System.out.println(atomicLong.getAndAdd(10)+"=========");
-        System.out.println(atomicLong.get()+"=========");
+        AtomicLong atomicLong = new AtomicLong(0);
+        System.out.println(atomicLong.getAndAdd(10) + "=========");
+        System.out.println(atomicLong.get() + "=========");
     }
+
     @Test
     public void ko() {
-        try{
-            int a=1;
-            while (a<3){
+        try {
+            int a = 1;
+            while (a < 3) {
                 System.out.println("1111111131111");
                 return;
             }
             System.out.println("222");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             System.out.println("finally");
         }
     }
+
     private AtomicReference<DownloadRecord> atomicReference;
+
     @Test
-    public void adddd2sf(){
-        String u="";
+    public void adddd2sf() {
+        String u = "";
         System.out.println(u.hashCode());
     }
+
     @Test
-    public void addddsf(){
-        DownloadRecord downloadRecord = new DownloadRecord(0,1);
-        for (DownloadRecord.FileRecord fileRecord:downloadRecord.getFileRecordList()) {
+    public void addddsf() {
+        DownloadRecord downloadRecord = new DownloadRecord(0, 1);
+        for (DownloadRecord.FileRecord fileRecord : downloadRecord.getFileRecordList()) {
             fileRecord.setStartPoint(0);
         }
-        atomicReference=new AtomicReference<>();
+        atomicReference = new AtomicReference<>();
         atomicReference.set(downloadRecord);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < 1000; i++) {
-                    atomicReference.get().getFileRecordList().get(0).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                    atomicReference.get().getFileRecordList().get(0).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint() + 1);
                 }
 
             }
@@ -73,7 +79,7 @@ public class ExampleUnitTest {
             @Override
             public void run() {
                 for (int i = 0; i < 1000; i++) {
-                    atomicReference.get().getFileRecordList().get(1).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                    atomicReference.get().getFileRecordList().get(1).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint() + 1);
                 }
 
             }
@@ -82,7 +88,7 @@ public class ExampleUnitTest {
             @Override
             public void run() {
                 for (int i = 0; i < 1000; i++) {
-                    atomicReference.get().getFileRecordList().get(2).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint()+1);
+                    atomicReference.get().getFileRecordList().get(2).setStartPoint(atomicReference.get().getFileRecordList().get(0).getStartPoint() + 1);
                 }
 
             }
@@ -94,23 +100,25 @@ public class ExampleUnitTest {
             }
         }).start();
     }
+
     @Test
-    public void asf(){
-        String url="";
+    public void asf() {
+        String url = "";
         String encode = MD5Coder.encode(url);
         System.out.println(encode);
     }
+
     @Test
-    public void adsf(){
-        File file=new File("f:/a/aa/aa.txt");
+    public void adsf() {
+        File file = new File("f:/a/aa/aa.txt");
         System.out.println(file.isDirectory());
         System.out.println(file.isFile());
-        if(!file.exists()){
+        if (!file.exists()) {
             file.mkdirs();
         }
         boolean directory = file.isDirectory();
         boolean file1 = file.isFile();
-        System.out.println(directory+"===="+file1);
+        System.out.println(directory + "====" + file1);
         try {
             boolean newFile = file.createNewFile();
             System.out.println(newFile);
@@ -118,6 +126,7 @@ public class ExampleUnitTest {
             e.printStackTrace();
         }
     }
+
     @Test
     public void asdf() {
         long l = System.currentTimeMillis();
@@ -126,23 +135,46 @@ public class ExampleUnitTest {
             MD5Coder.encode("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
         }
         long l2 = System.currentTimeMillis();
-        System.out.println(l2-l);
+        System.out.println(l2 - l);
         System.out.println(encode);
 
     }
+
     @Test
     public void as2df() {
         long l = System.currentTimeMillis();
-        String encode2 = MD5Coder.md5("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+        String encode2 = MD5Coder.encode("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
         for (int i = 0; i < 1000; i++) {
-            MD5Coder.md5("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
+            MD5Coder.encode("http://flashmedia.eastday.com/newdate/news/2016-11/shznews1125-19.mp4");
         }
         long l2 = System.currentTimeMillis();
-        System.out.println(l2-l);
+        System.out.println(l2 - l);
         System.out.println(encode2);
 
         //1d269889fd5d2cc197221f63db4d7343
         //1d269889fd5d2cc197221f63db4d7343
 
+    }
+
+    @Test
+    public void asasdf2df() {
+        AtomicInteger atomicInteger = new AtomicInteger();
+        long l = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            atomicInteger.addAndGet(10);
+        }
+        long l2 = System.currentTimeMillis();
+        System.out.println(l2 - l);
+    }
+
+    @Test
+    public void asasddf2df() {
+        int atomicInteger = 0;
+        long l = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            atomicInteger = atomicInteger + 10;
+        }
+        long l2 = System.currentTimeMillis();
+        System.out.println(l2 - l);
     }
 }

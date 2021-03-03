@@ -100,6 +100,7 @@ public class TaskInfo implements Runnable {
             if (responseCode == HttpURLConnection.HTTP_PARTIAL || responseCode == HttpURLConnection.HTTP_OK) {
                 int contentLength = httpURLConnection.getContentLength();
                 if (contentLength == 0) {
+                    close(randomAccessFile,bis,inputStream,httpURLConnection);
                     setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
                     downloadListener.readComplete();
                     return;
@@ -112,36 +113,40 @@ public class TaskInfo implements Runnable {
                 randomAccessFile = new RandomAccessFile(saveFile, "rw");
                 randomAccessFile.seek(startPoint);
                 while ((len = bis.read(buff)) != -1) {
-                    if (currentStatus == DownloadInfo.STATUS_ERROR || currentStatus == DownloadInfo.STATUS_PAUSE) {
-                        return;
-                    }
+                    randomAccessFile.write(buff, 0, len);
+                    downloadListener.readLength(len);
                     /*外部通知删除时，回调给外部现在可以执行删除操作了*/
                     if (currentStatus == DownloadInfo.STATUS_DELETE) {
+                        close(randomAccessFile,bis,inputStream,httpURLConnection);
                         downloadListener.needDelete();
                         return;
                     }
-
-                    randomAccessFile.write(buff, 0, len);
-                    downloadListener.readLength(len);
-
+                    if (currentStatus == DownloadInfo.STATUS_ERROR || currentStatus == DownloadInfo.STATUS_PAUSE) {
+                        close(randomAccessFile,bis,inputStream,httpURLConnection);
+                        return;
+                    }
                 }
+                close(randomAccessFile,bis,inputStream,httpURLConnection);
                 setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
                 downloadListener.readComplete();
             } else {
+                close(randomAccessFile,bis,inputStream,httpURLConnection);
                 setCurrentStatus(DownloadInfo.STATUS_ERROR);
                 downloadListener.fail();
             }
         } catch (Exception e) {
+            close(randomAccessFile,bis,inputStream,httpURLConnection);
             e.printStackTrace();
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
             downloadListener.fail();
-        } finally {
-            DownloadHelper.close(randomAccessFile);
-            DownloadHelper.close(bis);
-            DownloadHelper.close(inputStream);
-            if (httpURLConnection != null) {
-                httpURLConnection.disconnect();
-            }
         }
+    }
+
+    private void close(RandomAccessFile randomAccessFile, BufferedInputStream bis, InputStream inputStream, HttpURLConnection httpURLConnection) {
+        /*不在finally里面执行，防止回调方法里面继续调用下载，在未关闭http的情况下继续请求*/
+        DownloadHelper.close(randomAccessFile);
+        DownloadHelper.close(bis);
+        DownloadHelper.close(inputStream);
+        DownloadHelper.close(httpURLConnection);
     }
 }

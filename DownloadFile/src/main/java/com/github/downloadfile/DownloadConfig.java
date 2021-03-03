@@ -30,6 +30,8 @@ public class DownloadConfig implements Serializable {
 
     /*单个任务多线程下载数量*/
     private int threadNum = 2;
+    /*文件大小是多少时仅使用单线程下载*/
+    private long minFileSize;
 
 
     protected DownloadConfig(Builder builder) {
@@ -77,6 +79,7 @@ public class DownloadConfig implements Serializable {
         this.needSpeed = builder.needSpeed;
         this.downloadBufferSize = builder.downloadBufferSize;
         this.threadNum = builder.threadNum;
+        this.minFileSize = builder.minFileSize;
     }
 
     public static class Builder {
@@ -106,6 +109,9 @@ public class DownloadConfig implements Serializable {
 
         /*单个任务多线程下载数量*/
         private int threadNum = 2;
+
+        /*文件大小是多少时仅使用单线程下载*/
+        private long minFileSize;
 
         public Builder() {
             context = FileDownloadManager.getContext();
@@ -274,5 +280,13 @@ public class DownloadConfig implements Serializable {
             threadNum = 1;
         }
         return threadNum;
+    }
+
+    public long getMinFileSize() {
+        if(minFileSize<1){
+            /*最小50kb*/
+            minFileSize=51200;
+        }
+        return minFileSize;
     }
 }

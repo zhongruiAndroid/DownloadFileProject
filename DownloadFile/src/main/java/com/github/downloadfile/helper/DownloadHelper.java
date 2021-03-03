@@ -15,6 +15,7 @@ import com.github.downloadfile.bean.DownloadRecord;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,12 @@ public class DownloadHelper {
             closeable.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void close(HttpURLConnection httpURLConnection){
+        if (httpURLConnection != null) {
+            httpURLConnection.disconnect();
         }
     }
 
