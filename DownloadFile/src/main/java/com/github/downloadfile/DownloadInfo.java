@@ -140,7 +140,10 @@ public class DownloadInfo {
     }
 
     private void error() {
-        if (downloadConfig != null) {
+        error(false);
+    }
+    private void error(boolean notClearCache) {
+        if (downloadConfig != null&&!notClearCache) {
             DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
         }
@@ -535,7 +538,8 @@ public class DownloadInfo {
         for (TaskInfo info : taskInfoList) {
             info.changeStatus(STATUS_ERROR);
         }
-        error();
+//        下载时不清理已部分下载的缓存
+//        error(true);
     }
 
     /*边下载边保存当前下载进度*/
