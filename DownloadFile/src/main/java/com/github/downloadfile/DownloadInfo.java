@@ -146,6 +146,8 @@ public class DownloadInfo {
         if (downloadConfig != null&&!notClearCache) {
             DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
+        }else{
+            saveDownloadCacheInfo(downloadRecord);
         }
         setStatus(STATUS_ERROR);
         DownloadHelper.get().getHandler().post(new Runnable() {
@@ -538,6 +540,8 @@ public class DownloadInfo {
         for (TaskInfo info : taskInfoList) {
             info.changeStatus(STATUS_ERROR);
         }
+        /*如果因为网络原因下载失败，但是app没有切前后台，则手动保存下载进度*/
+        saveDownloadCacheInfo(downloadRecord);
 //        下载时不清理已部分下载的缓存
 //        error(true);
     }
