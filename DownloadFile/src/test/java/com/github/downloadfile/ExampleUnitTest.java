@@ -107,7 +107,21 @@ public class ExampleUnitTest {
         String encode = MD5Coder.encode(url);
         System.out.println(encode);
     }
+    @Test
+    public void asaff() {
+        System.out.println("11");
+        a();
+        System.out.println("22");
+    }
+    private void a(){
+        try {
+            System.out.println("try");
+        }catch (Exception e){
 
+        }finally {
+            System.out.println("finally");
+        }
+    }
     @Test
     public void adsf() {
         File file = new File("f:/a/aa/aa.txt");

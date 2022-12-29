@@ -41,7 +41,7 @@ public class DownloadRecord {
             long start = average * i;
             long end;
             if (i == (threadNum - 1)) {
-                end = fileSize;
+                end = fileSize-1;
             } else {
                 end = start + average - 1;
             }

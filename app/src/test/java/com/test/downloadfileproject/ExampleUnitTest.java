@@ -42,7 +42,21 @@ public class ExampleUnitTest {
         System.out.println(map.size());
         System.out.println(map.get("1"));
     }
+    @Test
+    public void asaff() {
+        System.out.println("11");
+        a();
+        System.out.println("22");
+    }
+    private void a(){
+        try {
+            System.out.println("try");
+        }catch (Exception e){
 
+        }finally {
+            System.out.println("finally");
+        }
+    }
     @Test
     public void sddf() {
         AtomicInteger atomicInteger=new AtomicInteger();

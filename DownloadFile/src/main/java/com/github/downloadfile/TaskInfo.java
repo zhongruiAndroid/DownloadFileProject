@@ -22,9 +22,10 @@ public class TaskInfo implements Runnable {
 
         void needDelete();
     }
-
+    private int index;
     private String fileUrl;
     private long startPoint;
+    private long downloadLength;
     private long endPoint;
     private File saveFile;
     private ReadStreamListener downloadListener;
@@ -32,9 +33,11 @@ public class TaskInfo implements Runnable {
     private int currentStatus;
 
 
-    public TaskInfo(String fileUrl, long startPoint, long endPoint, File saveFile, ReadStreamListener downloadListener) {
+    public TaskInfo(int index,String fileUrl, long startPoint,long downloadLength, long endPoint, File saveFile, ReadStreamListener downloadListener) {
+        this.index = index;
         this.fileUrl = fileUrl;
         this.startPoint = startPoint;
+        this.downloadLength = downloadLength;
         this.endPoint = endPoint;
         this.saveFile = saveFile;
         this.downloadListener = downloadListener;
@@ -68,10 +71,10 @@ public class TaskInfo implements Runnable {
     @Override
     public void run() {
         setCurrentStatus(DownloadInfo.STATUS_PROGRESS);
-        startMultiDownload(fileUrl, startPoint, endPoint, saveFile);
+        startMultiDownload(fileUrl, startPoint,downloadLength, endPoint, saveFile);
     }
 
-    private void startMultiDownload(String fileUrl, long startPoint, long endPoint, File saveFile) {
+    private void startMultiDownload(String fileUrl, long startPoint, long downloadLength,long endPoint, File tempFile) {
         if (downloadListener == null) {
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
             return;
@@ -81,18 +84,20 @@ public class TaskInfo implements Runnable {
         // 随机访问文件，可以指定断点续传的起始位置
         BufferedInputStream bis = null;
         RandomAccessFile randomAccessFile = null;
-        if (TextUtils.isEmpty(fileUrl) || saveFile == null) {
+        if (TextUtils.isEmpty(fileUrl) || tempFile == null) {
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
             downloadListener.fail();
             return;
         }
+        /*这里每个任务各自下载文件，下完之后进行文件合并*/
+        File saveFile=new File(tempFile.getParent(),tempFile.getName()+this.index);
         try {
             URL url = new URL(fileUrl);
             httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);
             if (endPoint != 0) {
-                httpURLConnection.setRequestProperty("Range", "bytes=" + startPoint + "-" + endPoint);
+                httpURLConnection.setRequestProperty("Range", "bytes=" + (startPoint+downloadLength) + "-" + endPoint);
             }
             httpURLConnection.connect();
             int responseCode = httpURLConnection.getResponseCode();
@@ -111,7 +116,7 @@ public class TaskInfo implements Runnable {
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
                 randomAccessFile = new RandomAccessFile(saveFile, "rw");
-                randomAccessFile.seek(startPoint);
+                randomAccessFile.seek(downloadLength);
                 while ((len = bis.read(buff)) != -1) {
                     randomAccessFile.write(buff, 0, len);
                     downloadListener.readLength(len);

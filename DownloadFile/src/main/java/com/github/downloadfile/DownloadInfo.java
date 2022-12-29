@@ -6,7 +6,11 @@ import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
 import com.github.downloadfile.listener.FileDownloadListener;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -142,11 +146,12 @@ public class DownloadInfo {
     private void error() {
         error(false);
     }
+
     private void error(boolean notClearCache) {
-        if (downloadConfig != null&&!notClearCache) {
+        if (downloadConfig != null && !notClearCache) {
             DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
-        }else{
+        } else {
             saveDownloadCacheInfo(downloadRecord);
         }
         setStatus(STATUS_ERROR);
@@ -334,7 +339,7 @@ public class DownloadInfo {
 
         }
         /*如果本地有下载记录，但是下载一部分的本地文件已经不存在了*/
-        if (downloadRecord!=null&&downloadRecord.hasDownloadRecord()) {
+        if (downloadRecord != null && downloadRecord.hasDownloadRecord()) {
             if (downloadConfig.getTempSaveFile() != null && !downloadConfig.getTempSaveFile().exists()) {
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
                 downloadRecord = null;
@@ -457,13 +462,16 @@ public class DownloadInfo {
 
         int threadNum = downloadConfig.getThreadNum();
         setStatus(STATUS_PROGRESS);
+        if (taskInfoList != null) {
+            taskInfoList.clear();
+        }
         for (int i = 0; i < threadNum; i++) {
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
             long downloadLength = record.getDownloadLength();
 
             /*记录之前缓存的下载的进度*/
             localCacheSize += downloadLength;
-            TaskInfo taskInfo = new TaskInfo(downloadConfig.getFileDownloadUrl(), record.getStartPoint() + downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
+            TaskInfo taskInfo = new TaskInfo(i, downloadConfig.getFileDownloadUrl(), record.getStartPoint(), downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
                 public void readLength(long readLength) {
                     long currentProgress = record.getDownloadLength() + readLength;
@@ -510,8 +518,47 @@ public class DownloadInfo {
         }
         saveDownloadCacheInfo(downloadRecord);
         /*所有taskinfo下载完才是真的下载完*/
-        downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
-        success(downloadConfig.getSaveFile());
+//        downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
+        /*现在完成之后进行文件合并*/
+        boolean result = false;
+        if (taskInfoList.size() == 0) {
+            result = new File(downloadConfig.getTempSaveFile().getParent(), downloadConfig.getTempSaveFile().getName() + "0").renameTo(downloadConfig.getSaveFile());
+        } else {
+            FileOutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(downloadConfig.getSaveFile());
+
+                for (int i = 0; i < taskInfoList.size(); i++) {
+                    /*每个task下载的临时文件*/
+                    File tempFile = new File(downloadConfig.getTempSaveFile().getAbsolutePath() + i);
+
+                    byte[] buff = new byte[2048 * 10];
+                    int len = 0;
+                    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tempFile));
+
+                    while ((len = bis.read(buff)) != -1) {
+                        outputStream.write(buff, 0, len);
+                    }
+                }
+                result = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (outputStream != null) {
+                        outputStream.flush();
+                        outputStream.close();
+                    }
+                } catch (Exception e) {
+                    result=false;
+                }
+            }
+        }
+        if (result) {
+            success(downloadConfig.getSaveFile());
+        } else {
+            error();
+        }
     }
 
     /*如果外部通知下载任务需要删除，检查下载任务是否停止下载*/
