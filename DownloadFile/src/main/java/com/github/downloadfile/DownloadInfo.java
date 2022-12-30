@@ -149,7 +149,8 @@ public class DownloadInfo {
 
     private void error(boolean notClearCache) {
         if (downloadConfig != null && !notClearCache) {
-            DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+//            DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+            deleteTempFile(downloadConfig.getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
         } else {
             saveDownloadCacheInfo(downloadRecord);
@@ -333,7 +334,8 @@ public class DownloadInfo {
         /*如果没有下载记录，那么需要删除之前已经下载的临时文件*/
         /*或者如果需要重新下载，忽略之前的下载进度*/
         if (DownloadRecord.isEmpty(downloadRecord) || (downloadConfig != null && downloadConfig.isReDownload())) {
-            DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+//            DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+            deleteTempFile(getDownloadConfig().getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
             downloadRecord = null;
 
@@ -386,7 +388,8 @@ public class DownloadInfo {
             if (!TextUtils.isEmpty(eTag) && !TextUtils.isEmpty(preETag) && !TextUtils.equals(eTag, preETag)) {
                 /*文件被修改*/
                 removeAppStateChangeListener();
-                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+//                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+                deleteTempFile(getDownloadConfig().getTempSaveFile());
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
                 downloadRecord = null;
 
@@ -398,7 +401,8 @@ public class DownloadInfo {
             } else if (!TextUtils.isEmpty(lastModified) && !TextUtils.isEmpty(preLastModified) && !TextUtils.equals(lastModified, preLastModified)) {
                 /*文件被修改*/
                 removeAppStateChangeListener();
-                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+//                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+                deleteTempFile(getDownloadConfig().getTempSaveFile());
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
                 downloadRecord = null;
                 /*因为需要自己调用自己，所以这里提前手动关闭连接*/
@@ -422,7 +426,8 @@ public class DownloadInfo {
                 /*单线程下载*/
                 downloadRecord.setSingleThreadDownload(contentLength, 1);
                 /*如果本地存在之前下载一部分的文件，先删除*/
-                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+//                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
+                deleteTempFile(getDownloadConfig().getTempSaveFile());
                 DownloadHelper.deleteFile(getDownloadConfig().getSaveFile());
             } else if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
                 /*支持范围下载*/
@@ -436,7 +441,8 @@ public class DownloadInfo {
                     if (downloadRecord.getFileSize() <= 0 || downloadRecord.getFileSize() != contentLength) {
                         /*如果用户手动删除了配置缓存文件，则重新下载*/
                         /*如果下载的文件大小和缓存的配置大小不一致，重新下载,删除需要下载的文件缓存*/
-                        DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+//                        DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+                        deleteTempFile(downloadConfig.getTempSaveFile());
                         downloadRecord.setSingleThreadDownload(contentLength, threadNum);
                     }
                 }
@@ -528,17 +534,26 @@ public class DownloadInfo {
             try {
                 outputStream = new FileOutputStream(downloadConfig.getSaveFile());
 
+                FileInputStream fileInputStream=null;
+                BufferedInputStream bis=null;
+                File tempFile=null;
                 for (int i = 0; i < taskInfoList.size(); i++) {
                     /*每个task下载的临时文件*/
-                    File tempFile = new File(downloadConfig.getTempSaveFile().getAbsolutePath() + i);
+                    tempFile = new File(downloadConfig.getTempSaveFile().getAbsolutePath() + i);
 
                     byte[] buff = new byte[2048 * 10];
                     int len = 0;
-                    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tempFile));
+
+                    fileInputStream = new FileInputStream(tempFile);
+                    bis = new BufferedInputStream(fileInputStream);
 
                     while ((len = bis.read(buff)) != -1) {
                         outputStream.write(buff, 0, len);
                     }
+                    outputStream.flush();
+
+                    bis.close();
+                    fileInputStream.close();
                 }
                 result = true;
             } catch (Exception e) {
@@ -573,12 +588,32 @@ public class DownloadInfo {
             }
         }
         /*所有taskinfo都可删除才是真的可以执行删除操作*/
-        DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+//        DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
+        deleteTempFile(downloadConfig.getTempSaveFile());
         DownloadHelper.deleteFile(downloadConfig.getSaveFile());
         DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
         delete();
     }
-
+    private void deleteTempFile(File tempFile){
+        if(tempFile==null){
+            return;
+        }
+        if(tempFile.exists()){
+            DownloadHelper.deleteFile(tempFile);
+        }
+        int position=0;
+        int count=0;
+        File file;
+        while (count<=2){
+            file=new File(tempFile.getParent(),tempFile.getName()+position);
+            if(file.exists()){
+                DownloadHelper.deleteFile(file);
+            }else{
+                count+=1;
+            }
+            position+=1;
+        }
+    }
     /*如果下载任务中某个任务错误，则将其他任务改成error状态*/
     private void checkOtherTaskInfoIsError() {
         if (taskInfoList == null) {

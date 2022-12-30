@@ -115,9 +115,11 @@ public class ExampleUnitTest {
     }
     private void a(){
         try {
-            System.out.println("try");
+            System.out.println("try1");
+            int a=1/0;
+            System.out.println("try2");
         }catch (Exception e){
-
+            System.out.println("try3");
         }finally {
             System.out.println("finally");
         }

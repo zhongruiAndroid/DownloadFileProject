@@ -91,6 +91,10 @@ public class TaskInfo implements Runnable {
         }
         /*这里每个任务各自下载文件，下完之后进行文件合并*/
         File saveFile=new File(tempFile.getParent(),tempFile.getName()+this.index);
+        if(downloadLength<=0){
+            /*从0开始下载时检查是否存在之前的临时文件，如果存在则删除*/
+            DownloadHelper.deleteFile(saveFile);
+        }
         try {
             URL url = new URL(fileUrl);
             httpURLConnection = (HttpURLConnection) url.openConnection();

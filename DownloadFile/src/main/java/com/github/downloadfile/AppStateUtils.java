@@ -3,7 +3,7 @@ package com.github.downloadfile;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-import android.support.v4.util.SparseArrayCompat;
+//import android.support.v4.util.SparseArrayCompat;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +15,7 @@ class AppStateUtils {
         void onStateChange(boolean intoFront);
     }
 
-    private SparseArrayCompat<AppStateChangeListener> stateChangeListenerMap;
+//    private SparseArrayCompat<AppStateChangeListener> stateChangeListenerMap;
 
     /*0:后台，1：前台*/
     private boolean currentStateIsFront;
@@ -29,7 +29,7 @@ class AppStateUtils {
     private Application.ActivityLifecycleCallbacks activityLifecycleCallbacks;
 
     private AppStateUtils() {
-        stateChangeListenerMap = new SparseArrayCompat<>();
+//        stateChangeListenerMap = new SparseArrayCompat<>();
         atomicInteger = new AtomicInteger();
         firstIntoApp = true;
         currentStateIsFront = true;
@@ -142,29 +142,29 @@ class AppStateUtils {
         if (object == null) {
             return;
         }
-        stateChangeListenerMap.put(object.hashCode(), appStateChangeListener);
+//        stateChangeListenerMap.put(object.hashCode(), appStateChangeListener);
     }
 
     public void removeAppStateChangeListener(Object object) {
         if (object == null) {
             return;
         }
-        if (stateChangeListenerMap == null) {
-            return;
-        }
-        stateChangeListenerMap.remove(object.hashCode());
+//        if (stateChangeListenerMap == null) {
+//            return;
+//        }
+//        stateChangeListenerMap.remove(object.hashCode());
     }
 
     private void notifyStateChangeListener(boolean intoFront) {
-        if (stateChangeListenerMap == null) {
-            return;
-        }
-        for (int i = 0; i < stateChangeListenerMap.size(); i++) {
-            AppStateChangeListener appStateChangeListener = stateChangeListenerMap.valueAt(i);
-            if (appStateChangeListener == null) {
-                continue;
-            }
-            appStateChangeListener.onStateChange(intoFront);
-        }
+//        if (stateChangeListenerMap == null) {
+//            return;
+//        }
+//        for (int i = 0; i < stateChangeListenerMap.size(); i++) {
+//            AppStateChangeListener appStateChangeListener = stateChangeListenerMap.valueAt(i);
+//            if (appStateChangeListener == null) {
+//                continue;
+//            }
+//            appStateChangeListener.onStateChange(intoFront);
+//        }
     }
 }
