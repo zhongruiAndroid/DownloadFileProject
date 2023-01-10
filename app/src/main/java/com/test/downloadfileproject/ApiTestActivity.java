@@ -72,7 +72,6 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_api_test);
 
-        String hwUrl = "https://imtt.dd.qq.com/16891/apk/0F9A4978BE0E05EFBBBAEF535150EEA9.apk?fsname=com.vmall.client_1.9.3.310_10903310.apk&csr=1bbd";
         long time=System.currentTimeMillis();
         String s = hwUrl.hashCode() + "";
         long time2=System.currentTimeMillis();

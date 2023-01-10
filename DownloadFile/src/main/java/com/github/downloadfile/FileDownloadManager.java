@@ -7,6 +7,7 @@ import com.github.downloadfile.listener.FileDownloadListener;
 
 
 public class FileDownloadManager {
+    public static final boolean debug=true;
     private static Context context;
 
     public static Context getContext() {

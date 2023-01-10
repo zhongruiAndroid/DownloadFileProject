@@ -1,6 +1,7 @@
 package com.github.downloadfile;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
@@ -46,20 +47,9 @@ public class DownloadInfo {
         status = new AtomicInteger(0);
     }
 
-    private AppStateUtils.AppStateChangeListener appStateChangeListener = new AppStateUtils.AppStateChangeListener() {
-        @Override
-        public void onStateChange(boolean intoFront) {
-            notifySaveRecord();
-        }
-    };
 
-    private void setAppStateChangeListener() {
-        AppStateUtils.get().addAppStateChangeListener(this, appStateChangeListener);
-    }
 
-    private void removeAppStateChangeListener() {
-        AppStateUtils.get().removeAppStateChangeListener(this);
-    }
+
 
     public FileDownloadListener getDownloadListener() {
         if (downloadListener == null) {
@@ -105,6 +95,9 @@ public class DownloadInfo {
 
     private void setStatus(int status) {
         this.status.set(status);
+        if(status==STATUS_PAUSE||status==STATUS_ERROR||status==STATUS_SUCCESS){
+            notifySaveRecord();
+        }
     }
 
     public int getStatus() {
@@ -222,8 +215,7 @@ public class DownloadInfo {
     }
 
     private long preTime;
-    private AtomicLong tempDownloadSize;
-    private long tempTimeInterval = 200;
+    private long tempDownloadSize;
 
     private void reset() {
         if (taskInfoList != null) {
@@ -232,11 +224,20 @@ public class DownloadInfo {
             taskInfoList = new ArrayList<>();
         }
         preTime = 0;
-        tempDownloadSize = new AtomicLong(0);
+        tempDownloadSize = 0;
         localCacheSize = 0;
     }
 
-    private void progress( ) {
+    private Runnable saveCacheRunnable=new Runnable() {
+        @Override
+        public void run() {
+            notifySaveRecord();
+            if(getStatus()==STATUS_PROGRESS){
+                DownloadHelper.get().getHandler().postDelayed(saveCacheRunnable,getDownloadConfig().getSaveFileTimeInterval());
+            }
+        }
+    };
+    private void progress() {
         if (getStatus() != STATUS_PROGRESS) {
             return;
         }
@@ -254,23 +255,20 @@ public class DownloadInfo {
         if (downloadConfig.isNeedSpeed()) {
             long nowTime = System.currentTimeMillis();
             if (preTime <= 0) {
-                tempDownloadSize.set(0);
+                tempDownloadSize=progress;
                 preTime = nowTime;
             }
             long timeInterval = nowTime - preTime;
-            if (timeInterval >= tempTimeInterval) {
-                tempTimeInterval = 1000;
-                final float speedBySecond = tempDownloadSize.get() * 1000f / timeInterval;
+            if (timeInterval >= 1000) {
+                float speedBySecond = (progress-tempDownloadSize)  * 1000f / timeInterval;
+                tempDownloadSize=progress;
                 preTime = nowTime;
-                tempDownloadSize.set(0);
                 DownloadHelper.get().getHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         getDownloadListener().onSpeed(Float.parseFloat(String.format("%.1f", speedBySecond)));
                     }
                 });
-            } else {
-                tempDownloadSize.addAndGet(progress);
             }
         }
         long finalProgress = progress;
@@ -313,7 +311,6 @@ public class DownloadInfo {
     }
 
     private void downloadByChildThread() {
-        setAppStateChangeListener();
         reset();
         /*下载完成后需要保存的文件*/
         File saveFile = downloadConfig.getSaveFile();
@@ -350,7 +347,6 @@ public class DownloadInfo {
         }
         /*如果本地有下载记录，但是下载一部分的本地文件已经不存在了*/
         if (downloadRecord != null && downloadRecord.hasDownloadRecord()) {
-            // TODO: 2023/1/6
             File downloadTempFile = getDownloadTempFile(downloadConfig.getTempSaveFile());
             if (downloadTempFile!= null && !downloadTempFile.exists()) {
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
@@ -397,7 +393,6 @@ public class DownloadInfo {
             String preLastModified = downloadRecord.getLastModified();
             if (!TextUtils.isEmpty(eTag) && !TextUtils.isEmpty(preETag) && !TextUtils.equals(eTag, preETag)) {
                 /*文件被修改*/
-                removeAppStateChangeListener();
 //                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
                 deleteTempFile(getDownloadConfig().getTempSaveFile());
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
@@ -410,7 +405,6 @@ public class DownloadInfo {
                 return;
             } else if (!TextUtils.isEmpty(lastModified) && !TextUtils.isEmpty(preLastModified) && !TextUtils.equals(lastModified, preLastModified)) {
                 /*文件被修改*/
-                removeAppStateChangeListener();
 //                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
                 deleteTempFile(getDownloadConfig().getTempSaveFile());
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
@@ -491,6 +485,7 @@ public class DownloadInfo {
                 @Override
                 public void readLength(long readLength) {
                     long currentProgress = record.getDownloadLength() + readLength;
+                    /*记录下载长度，用于下载中时保存下载的记录*/
                     record.setDownloadLength(currentProgress);
                     int status = getStatus();
                     if (status == STATUS_PAUSE || status == STATUS_ERROR || status == STATUS_DELETE) {
@@ -520,6 +515,8 @@ public class DownloadInfo {
             taskInfoList.add(taskInfo);
             DownloadHelper.get().getExecutorService().execute(taskInfo);
         }
+        /*没3秒执行一次缓存数据*/
+        DownloadHelper.get().getHandler().postDelayed(saveCacheRunnable,getDownloadConfig().getSaveFileTimeInterval());
     }
 
     public static final int _50mb=1024*1024*50;
@@ -667,6 +664,9 @@ public class DownloadInfo {
     }
 
     public void notifySaveRecord() {
+        if(FileDownloadManager.debug){
+            Log.i("=====","=====notifySaveRecord");
+        }
         saveDownloadCacheInfo(downloadRecord);
     }
 }

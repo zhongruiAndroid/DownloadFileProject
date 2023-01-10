@@ -32,7 +32,8 @@ public class DownloadConfig implements Serializable {
     private int threadNum = 2;
     /*文件大小是多少时仅使用单线程下载*/
     private long minFileSize;
-
+    /*间隔多少秒保存下载记录*/
+    private long saveFileTimeInterval=5000;
 
     protected DownloadConfig(Builder builder) {
         if (builder.saveFile == null) {
@@ -282,10 +283,22 @@ public class DownloadConfig implements Serializable {
         return threadNum;
     }
 
+    public long getSaveFileTimeInterval() {
+        if(saveFileTimeInterval<=1000){
+            saveFileTimeInterval=2000;
+        }
+        return saveFileTimeInterval;
+    }
+
+    public void setSaveFileTimeInterval(long saveFileTimeInterval) {
+        this.saveFileTimeInterval = saveFileTimeInterval;
+    }
+
+    public static final int _20mb=1024*1024*20;
     public long getMinFileSize() {
         if(minFileSize<1){
-            /*最小50kb*/
-            minFileSize=51200;
+            /*最小20mb*/
+            minFileSize=_20mb;
         }
         return minFileSize;
     }
