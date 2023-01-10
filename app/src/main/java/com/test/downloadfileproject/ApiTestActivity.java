@@ -62,8 +62,8 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
     private long downloadTime;
 
     public static final String nbyUrl = "https://b4fc69b7b91b11258cf93c80ebe77d53.dd.cdntips.com/imtt.dd.qq.com/16891/apk/FBAF111EE8D5AE9810A79EFA794901AA.apk?mkey=5f0db2308ccf356e&f=9870&fsname=cn.nubia.nubiashop_1.6.3.1021_77.apk&csr=1bbd&cip=140.207.19.155&proto=https";
-    public static final String hwUrl = "https://imtt.dd.qq.com/16891/apk/0F9A4978BE0E05EFBBBAEF535150EEA9.apk?fsname=com.vmall.client_1.9.3.310_10903310.apk&csr=1bbd";
-    public static final String mzUrl = "https://imtt.dd.qq.com/16891/apk/25B4FBFEFA567C10993D8528A939E3B3.apk?fsname=com.flyme.meizu.store_4.1.10_4110.apk&csr=1bbd";
+    public static final String hwUrl = "https://appdl6-drcn.dbankcdn.cn/dl/appdl/safetycdn/8a0788feb3b94320ae3c8c787bd2f98f/24c7606bae1b4c2d8ee2b75899043195.apk";
+    public static final String mzUrl = "https://e44a587fabf90b3b7300738565deeb66.rdt.tfogc.com:49156/dldir1.qq.com/weixin/android/weixin8032android2300_arm64.apk?mkey=63bbfa94375dff2bcb8a4dfc7ce8ae42&arrive_key=198013293387&cip=222.64.108.252&proto=https";
     public static final String reUrl = "https://imtt.dd.qq.com/16891/apk/C03FDA4370630805DBE1FFB785A57E6E.apk?fsname=com.speedsoftware.rootexplorer_4.9.6_999496.apk&csr=1bbd";
 
     @Override
@@ -255,7 +255,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onSpeed(float speedBySecond) {
-                tvSpeed.setText("下载速度:" + speedBySecond + "kb/s");
+                tvSpeed.setText("下载速度:" + (speedBySecond/1024/1024) + "mb/s");
             }
 
             @Override

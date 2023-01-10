@@ -39,13 +39,11 @@ public class DownloadInfo {
     private List<TaskInfo> taskInfoList = new ArrayList<>();
 
     private AtomicInteger status;
-    private AtomicLong downloadProgress;
 
     public DownloadInfo(DownloadConfig config, FileDownloadListener listener) {
         this.downloadConfig = config;
         this.downloadListener = listener;
         status = new AtomicInteger(0);
-        downloadProgress = new AtomicLong(0);
     }
 
     private AppStateUtils.AppStateChangeListener appStateChangeListener = new AppStateUtils.AppStateChangeListener() {
@@ -214,7 +212,6 @@ public class DownloadInfo {
             return;
         }
         this.totalSize = totalSize;
-        downloadProgress.set(0);
         setStatus(STATUS_CONNECT);
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
@@ -239,11 +236,20 @@ public class DownloadInfo {
         localCacheSize = 0;
     }
 
-    private void progress(final long downloadSize) {
+    private void progress( ) {
         if (getStatus() != STATUS_PROGRESS) {
             return;
         }
-        final long progress = downloadProgress.addAndGet(downloadSize);
+        if(taskInfoList==null||taskInfoList.isEmpty()){
+            return;
+        }
+        long progress = 0;
+        for (TaskInfo info:taskInfoList){
+            if(info==null){
+                continue;
+            }
+            progress+= info.getDownloadLength();
+        }
         //计算网速
         if (downloadConfig.isNeedSpeed()) {
             long nowTime = System.currentTimeMillis();
@@ -264,13 +270,15 @@ public class DownloadInfo {
                     }
                 });
             } else {
-                tempDownloadSize.addAndGet(downloadSize);
+                tempDownloadSize.addAndGet(progress);
             }
         }
+        long finalProgress = progress;
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onProgress(progress + localCacheSize, totalSize);
+//                getDownloadListener().onProgress(progress + localCacheSize, totalSize);
+                getDownloadListener().onProgress(finalProgress, totalSize);
             }
         });
     }
@@ -321,7 +329,7 @@ public class DownloadInfo {
                 /*如果本地已存在下载的文件，直接返回*/
                 long length = saveFile.length();
                 connect(length);
-                progress(length);
+                progress();
                 success(saveFile);
                 return;
             }
@@ -342,7 +350,9 @@ public class DownloadInfo {
         }
         /*如果本地有下载记录，但是下载一部分的本地文件已经不存在了*/
         if (downloadRecord != null && downloadRecord.hasDownloadRecord()) {
-            if (downloadConfig.getTempSaveFile() != null && !downloadConfig.getTempSaveFile().exists()) {
+            // TODO: 2023/1/6
+            File downloadTempFile = getDownloadTempFile(downloadConfig.getTempSaveFile());
+            if (downloadTempFile!= null && !downloadTempFile.exists()) {
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
                 downloadRecord = null;
             }
@@ -486,7 +496,7 @@ public class DownloadInfo {
                     if (status == STATUS_PAUSE || status == STATUS_ERROR || status == STATUS_DELETE) {
                         return;
                     }
-                    progress(readLength);
+                    progress();
                 }
 
                 @Override
@@ -511,6 +521,8 @@ public class DownloadInfo {
             DownloadHelper.get().getExecutorService().execute(taskInfo);
         }
     }
+
+    public static final int _50mb=1024*1024*50;
 
     private void checkOtherTaskInfoIsComplete() {
         if (taskInfoList == null) {
@@ -541,7 +553,7 @@ public class DownloadInfo {
                     /*每个task下载的临时文件*/
                     tempFile = new File(downloadConfig.getTempSaveFile().getAbsolutePath() + i);
 
-                    byte[] buff = new byte[2048 * 10];
+                    byte[] buff = new byte[_50mb];
                     int len = 0;
 
                     fileInputStream = new FileInputStream(tempFile);
@@ -593,6 +605,13 @@ public class DownloadInfo {
         DownloadHelper.deleteFile(downloadConfig.getSaveFile());
         DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
         delete();
+    }
+
+    private File getDownloadTempFile(File tempFile){
+        if(tempFile==null){
+            return null;
+        }
+        return new File(tempFile.getParent(),tempFile.getName()+"0");
     }
     private void deleteTempFile(File tempFile){
         if(tempFile==null){

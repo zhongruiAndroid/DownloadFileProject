@@ -33,7 +33,22 @@ public class ExampleUnitTest {
         System.out.println(atomicLong.getAndAdd(10) + "=========");
         System.out.println(atomicLong.get() + "=========");
     }
+    @Test
+    public void sfdfs() {
+        File file = new File("aa/bb/c.txt");
+        System.out.println(file.getParent());
+        System.out.println(file.getName());
+    }
+    @Test
+    public void sfddfs() {
 
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            System.currentTimeMillis();
+        }
+        long end =System.currentTimeMillis();
+        System.out.println("=="+(end-start));
+    }
     @Test
     public void ko() {
         try {

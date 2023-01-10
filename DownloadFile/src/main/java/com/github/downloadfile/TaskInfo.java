@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class TaskInfo implements Runnable {
+    public static final int _20mb=1024*1024*20;
     public interface ReadStreamListener {
         void readLength(long readLength);
 
@@ -73,8 +74,12 @@ public class TaskInfo implements Runnable {
         setCurrentStatus(DownloadInfo.STATUS_PROGRESS);
         startMultiDownload(fileUrl, startPoint,downloadLength, endPoint, saveFile);
     }
-
+    private volatile long currentDownloadLength;
+    public long getDownloadLength(){
+        return currentDownloadLength;
+    }
     private void startMultiDownload(String fileUrl, long startPoint, long downloadLength,long endPoint, File tempFile) {
+        currentDownloadLength=downloadLength;
         if (downloadListener == null) {
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
             return;
@@ -116,13 +121,14 @@ public class TaskInfo implements Runnable {
                 }
                 inputStream = httpURLConnection.getInputStream();
 
-                byte[] buff = new byte[2048 * 10];
+                byte[] buff = new byte[_20mb];
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
                 randomAccessFile = new RandomAccessFile(saveFile, "rw");
                 randomAccessFile.seek(downloadLength);
                 while ((len = bis.read(buff)) != -1) {
                     randomAccessFile.write(buff, 0, len);
+                    currentDownloadLength+=len;
                     downloadListener.readLength(len);
                     /*外部通知删除时，回调给外部现在可以执行删除操作了*/
                     if (currentStatus == DownloadInfo.STATUS_DELETE) {

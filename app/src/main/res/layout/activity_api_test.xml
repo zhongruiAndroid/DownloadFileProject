@@ -180,7 +180,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="复制魅族商城下载地址"
+                android:text="复制微信app下载地址"
                 android:textAllCaps="false"
                 android:textSize="13sp" />
 
