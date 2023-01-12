@@ -579,6 +579,8 @@ public class DownloadInfo {
             }
         }
         if (result) {
+            /*如果文件组合完成，则删除临时文件*/
+            deleteTempFile(downloadConfig.getTempSaveFile());
             success(downloadConfig.getSaveFile());
         } else {
             error();

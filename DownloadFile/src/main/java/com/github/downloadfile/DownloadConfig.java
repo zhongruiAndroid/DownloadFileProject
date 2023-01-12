@@ -44,11 +44,12 @@ public class DownloadConfig implements Serializable {
                 if (TextUtils.isEmpty(fileDownloadUrl)) {
                     throw new IllegalStateException("please call setFileDownloadUrl() set downloadUrl");
                 }
+                /*防止url带有其他参数*/
                 fileDownloadUrl = fileDownloadUrl.split("\\?")[0];
                 int index = fileDownloadUrl.lastIndexOf(".");
                 /*通过url获取文件后缀*/
                 String suffix = fileDownloadUrl.substring(index);
-                String fileName = MD5Coder.encode(fileDownloadUrl).substring(8, 24) + suffix;
+                String fileName = MD5Coder.encode(fileDownloadUrl) + suffix;
                 if (builder.useSourceName) {
                     index = fileDownloadUrl.lastIndexOf("/");
                     fileName = fileDownloadUrl.substring(index);
@@ -57,6 +58,7 @@ public class DownloadConfig implements Serializable {
             }
         } else {
             String fileDownloadUrl = builder.fileDownloadUrl;
+            /*防止url带有其他参数*/
             fileDownloadUrl = fileDownloadUrl.split("\\?")[0];
             if (builder.useSourceName && !TextUtils.isEmpty(fileDownloadUrl)) {
                 int index = fileDownloadUrl.lastIndexOf("/");

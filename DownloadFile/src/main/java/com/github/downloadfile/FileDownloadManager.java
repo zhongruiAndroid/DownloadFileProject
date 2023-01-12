@@ -22,7 +22,6 @@ public class FileDownloadManager {
             return;
         }
         context = application.getApplicationContext();
-        AppStateUtils.register(application);
     }
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {

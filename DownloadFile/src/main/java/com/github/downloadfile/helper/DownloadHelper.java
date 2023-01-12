@@ -144,7 +144,7 @@ public class DownloadHelper {
         if (sp == null) {
             sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
         }
-        sp.edit().putString(downloadRecord.getUniqueId(), json).commit();
+        sp.edit().putString(downloadRecord.getUniqueId(), json).apply();
     }
 
     public void clearRecordByUnionId(String unionId) {
@@ -161,7 +161,7 @@ public class DownloadHelper {
         if (sp == null) {
             sp = FileDownloadManager.getContext().getSharedPreferences(spName, Context.MODE_PRIVATE);
         }
-        sp.edit().remove(unionId).commit();
+        sp.edit().remove(unionId).apply();
     }
 
     public static boolean hasFreeSpace(Context context, long downloadSize) {
