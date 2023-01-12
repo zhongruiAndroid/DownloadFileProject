@@ -78,6 +78,7 @@ public class ApiTestActivity extends AppCompatActivity implements View.OnClickLi
         Log.i("=====","====time2="+(time2-time)/1000f);
 
         FileDownloadManager.init(getApplication());
+        FileDownloadManager.setDebug(BuildConfig.DEBUG);
 
 
         initView();

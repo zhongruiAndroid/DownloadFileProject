@@ -73,9 +73,9 @@ public class DownloadHelper {
         }
     }
 
-    public static void deleteFile(File file) {
+    public static boolean deleteFile(File file) {
         if (file == null) {
-            return;
+            return false;
         }
         if (file.exists()) {
             if (file.isFile()) {
@@ -88,9 +88,10 @@ public class DownloadHelper {
                         deleteFile(files[i]);
                     }
                 }
+                file.delete();
             }
-            file.delete();
         }
+        return true;
     }
 
     private final String sp_file_name = "zr_multi_download_sp";

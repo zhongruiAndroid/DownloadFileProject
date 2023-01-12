@@ -7,7 +7,7 @@ import com.github.downloadfile.listener.FileDownloadListener;
 
 
 public class FileDownloadManager {
-    public static final boolean debug=true;
+    public static boolean debug=false;
     private static Context context;
 
     public static Context getContext() {
@@ -17,11 +17,15 @@ public class FileDownloadManager {
         return context;
     }
 
-    public static void init(Application application) {
+    public static void init(Context ctx) {
         if(context!=null){
             return;
         }
-        context = application.getApplicationContext();
+        context = ctx;
+    }
+
+    public static void setDebug(boolean debug) {
+        FileDownloadManager.debug=debug;
     }
 
     public static DownloadInfo download(DownloadConfig config, FileDownloadListener listener) {

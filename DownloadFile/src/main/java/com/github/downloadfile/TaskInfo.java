@@ -42,6 +42,10 @@ public class TaskInfo implements Runnable {
         this.endPoint = endPoint;
         this.saveFile = saveFile;
         this.downloadListener = downloadListener;
+
+        if(FileDownloadManager.debug){
+            LG.i("第"+(index)+"个下载任务,需要下载网络文件的起始位置:"+startPoint+",已存在的文件下载长度:"+downloadLength+",需要下载网络文件的结束位置:"+endPoint);
+        }
     }
 
     /*接收到外部的暂停或者删除或者错误通知时*/
@@ -106,6 +110,9 @@ public class TaskInfo implements Runnable {
             httpURLConnection.setConnectTimeout(30000);
             httpURLConnection.setReadTimeout(30000);
             if (endPoint != 0) {
+                if(FileDownloadManager.debug){
+                    LG.i("第"+(index)+"个下载任务,请求头Range:"+("bytes=" + (startPoint+downloadLength) + "-" + endPoint));
+                }
                 httpURLConnection.setRequestProperty("Range", "bytes=" + (startPoint+downloadLength) + "-" + endPoint);
             }
             httpURLConnection.connect();
@@ -116,6 +123,9 @@ public class TaskInfo implements Runnable {
                 if (contentLength == 0) {
                     close(randomAccessFile,bis,inputStream,httpURLConnection);
                     setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
+                    if(FileDownloadManager.debug){
+                        LG.i("第"+(index)+"个下载任务下载完成");
+                    }
                     downloadListener.readComplete();
                     return;
                 }
@@ -143,20 +153,30 @@ public class TaskInfo implements Runnable {
                 }
                 close(randomAccessFile,bis,inputStream,httpURLConnection);
                 setCurrentStatus(DownloadInfo.STATUS_SUCCESS);
+                if(FileDownloadManager.debug){
+                    LG.i("第"+(index)+"个下载任务下载完成");
+                }
                 downloadListener.readComplete();
             } else {
                 close(randomAccessFile,bis,inputStream,httpURLConnection);
                 setCurrentStatus(DownloadInfo.STATUS_ERROR);
+
+                downloadFail();
                 downloadListener.fail();
             }
         } catch (Exception e) {
             close(randomAccessFile,bis,inputStream,httpURLConnection);
             e.printStackTrace();
             setCurrentStatus(DownloadInfo.STATUS_ERROR);
+            downloadFail();
             downloadListener.fail();
         }
     }
-
+    private void downloadFail(){
+        if(FileDownloadManager.debug){
+            LG.i("第"+(index)+"个下载任务下载失败");
+        }
+    }
     private void close(RandomAccessFile randomAccessFile, BufferedInputStream bis, InputStream inputStream, HttpURLConnection httpURLConnection) {
         /*不在finally里面执行，防止回调方法里面继续调用下载，在未关闭http的情况下继续请求*/
         DownloadHelper.close(randomAccessFile);

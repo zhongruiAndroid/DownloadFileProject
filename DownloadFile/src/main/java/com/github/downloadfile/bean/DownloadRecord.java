@@ -34,6 +34,9 @@ public class DownloadRecord {
     }
 
     public void setSingleThreadDownload(long fileSize, int threadNum) {
+        if(threadNum<=0){
+            threadNum=1;
+        }
         this.fileSize = fileSize;
         fileRecordList = new ArrayList<>();
         long average = fileSize / threadNum;

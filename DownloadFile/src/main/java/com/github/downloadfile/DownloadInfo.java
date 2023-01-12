@@ -11,13 +11,11 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadInfo {
     private FileDownloadListener downloadListener;
@@ -139,6 +137,9 @@ public class DownloadInfo {
     }
 
     private void error(boolean notClearCache) {
+        if(FileDownloadManager.debug){
+            LG.i("下载失败");
+        }
         if (downloadConfig != null && !notClearCache) {
 //            DownloadHelper.deleteFile(downloadConfig.getTempSaveFile());
             deleteTempFile(downloadConfig.getTempSaveFile());
@@ -191,6 +192,9 @@ public class DownloadInfo {
             return;
         }
         setStatus(STATUS_SUCCESS);
+        if(FileDownloadManager.debug){
+            LG.i("下载完成:"+file.getAbsolutePath());
+        }
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -225,12 +229,13 @@ public class DownloadInfo {
         }
         preTime = 0;
         tempDownloadSize = 0;
-        localCacheSize = 0;
+//        localCacheSize = 0;
     }
 
     private Runnable saveCacheRunnable=new Runnable() {
         @Override
         public void run() {
+
             notifySaveRecord();
             if(getStatus()==STATUS_PROGRESS){
                 DownloadHelper.get().getHandler().postDelayed(saveCacheRunnable,getDownloadConfig().getSaveFileTimeInterval());
@@ -311,20 +316,35 @@ public class DownloadInfo {
     }
 
     private void downloadByChildThread() {
+        if(FileDownloadManager.debug){
+            LG.i("----------准备下载前的逻辑校验----------");
+        }
         reset();
         /*下载完成后需要保存的文件*/
         File saveFile = downloadConfig.getSaveFile();
         if (!saveFile.getParentFile().exists()) {
             saveFile.getParentFile().mkdirs();
         }
+        if(FileDownloadManager.debug){
+            LG.i("设置下载成功后的文件路径:"+saveFile.getAbsolutePath());
+        }
         /*如果存在已下载完成的文件*/
         if (saveFile != null && saveFile.exists() && saveFile.isFile()) {
+            if(FileDownloadManager.debug){
+                LG.i("文件已经存在:"+saveFile.getAbsolutePath());
+            }
             if (downloadConfig.isIfExistAgainDownload()) {
-                DownloadHelper.deleteFile(saveFile);
+                boolean deleteResult = DownloadHelper.deleteFile(saveFile);
+                if(FileDownloadManager.debug){
+                    LG.i("已经存在的文件_删除"+(deleteResult?"成功":"失败"));
+                }
 //                downloadConfig.setSaveFile(DownloadHelper.reDownloadAndRename(saveFile, 1));
             } else {
                 /*如果本地已存在下载的文件，直接返回*/
                 long length = saveFile.length();
+                if(FileDownloadManager.debug){
+                    LG.i("已存在的文件大小(字节):"+length);
+                }
                 connect(length);
                 progress();
                 success(saveFile);
@@ -335,7 +355,13 @@ public class DownloadInfo {
         if (DownloadRecord.isEmpty(downloadRecord)) {
             downloadRecord = DownloadHelper.get().getRecord(downloadConfig.getDownloadSPName(), getDownloadConfig().getUnionId());
         }
-
+        if(FileDownloadManager.debug){
+            if(DownloadRecord.isEmpty(downloadRecord)) {
+                LG.i("未获取到下载记录");
+            }else{
+                LG.i("获取到已存在的下载记录");
+            }
+        }
         /*如果没有下载记录，那么需要删除之前已经下载的临时文件*/
         /*或者如果需要重新下载，忽略之前的下载进度*/
         if (DownloadRecord.isEmpty(downloadRecord) || (downloadConfig != null && downloadConfig.isReDownload())) {
@@ -343,17 +369,24 @@ public class DownloadInfo {
             deleteTempFile(getDownloadConfig().getTempSaveFile());
             DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
             downloadRecord = null;
-
+            if(FileDownloadManager.debug){
+                LG.i("删除已存在的下载记录");
+            }
         }
         /*如果本地有下载记录，但是下载一部分的本地文件已经不存在了*/
         if (downloadRecord != null && downloadRecord.hasDownloadRecord()) {
             File downloadTempFile = getDownloadTempFile(downloadConfig.getTempSaveFile());
             if (downloadTempFile!= null && !downloadTempFile.exists()) {
+                if(FileDownloadManager.debug){
+                    LG.i("存在下载记录,但不存在已下载的temp文件,删除已存在的下载记录");
+                }
                 DownloadHelper.get().clearRecordByUnionId(downloadConfig.getDownloadSPName(), downloadConfig.getUnionId());
                 downloadRecord = null;
             }
         }
-
+        if(FileDownloadManager.debug){
+            LG.i("开始请求网络文件");
+        }
         HttpURLConnection httpURLConnection = null;
         try {
             setStatus(STATUS_REQUEST);
@@ -367,6 +400,12 @@ public class DownloadInfo {
             String eTag = httpURLConnection.getHeaderField("ETag");
             String lastModified = httpURLConnection.getHeaderField("Last-Modified");
             long contentLength = getContentLength(httpURLConnection);
+            if(FileDownloadManager.debug){
+                LG.i("请求响应码:"+responseCode);
+                LG.i("获取到网络文件ETag:"+eTag);
+                LG.i("获取到网络文件Last-Modified:"+lastModified);
+                LG.i("获取到网络文件长度为(字节):"+contentLength);
+            }
             if (contentLength < 0) {
                 DownloadHelper.close(httpURLConnection);
                 /*有可能状态码=200，但是内容长度为null*/
@@ -376,12 +415,18 @@ public class DownloadInfo {
             connect(contentLength);
             if (!DownloadHelper.hasFreeSpace(FileDownloadManager.getContext(), contentLength)) {
                 DownloadHelper.close(httpURLConnection);
+                if(FileDownloadManager.debug){
+                    LG.i("存储空间不足");
+                }
                 //储存空间不足
                 error();
                 return;
             }
             /*如果首次下载*/
             if (downloadRecord == null || downloadRecord.getFileSize() <= 0) {
+                if(FileDownloadManager.debug){
+                    LG.i("需要重新下载");
+                }
                 downloadRecord = new DownloadRecord(contentLength, downloadConfig.getThreadNum());
                 downloadRecord.setFileSize(contentLength);
                 downloadRecord.setDownloadUrl(downloadConfig.getFileDownloadUrl());
@@ -391,7 +436,14 @@ public class DownloadInfo {
             /*上次请求的eTag和lastModified,如果和这次请求返回的不一样，则从头开始下载*/
             String preETag = downloadRecord.geteTag();
             String preLastModified = downloadRecord.getLastModified();
+            if(FileDownloadManager.debug){
+                LG.i("获取文件上次下载记录的ETag:"+preETag);
+                LG.i("获取文件上次下载记录的Last-Modified:"+preLastModified);
+            }
             if (!TextUtils.isEmpty(eTag) && !TextUtils.isEmpty(preETag) && !TextUtils.equals(eTag, preETag)) {
+                if(FileDownloadManager.debug){
+                    LG.i("网络文件和本地文件ETag不匹配,准备重新下载");
+                }
                 /*文件被修改*/
 //                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
                 deleteTempFile(getDownloadConfig().getTempSaveFile());
@@ -404,6 +456,9 @@ public class DownloadInfo {
                 downloadByChildThread();
                 return;
             } else if (!TextUtils.isEmpty(lastModified) && !TextUtils.isEmpty(preLastModified) && !TextUtils.equals(lastModified, preLastModified)) {
+                if(FileDownloadManager.debug){
+                    LG.i("网络文件和本地文件Last-Modified不匹配,准备重新下载");
+                }
                 /*文件被修改*/
 //                DownloadHelper.deleteFile(getDownloadConfig().getTempSaveFile());
                 deleteTempFile(getDownloadConfig().getTempSaveFile());
@@ -416,10 +471,16 @@ public class DownloadInfo {
                 return;
             }
             if (!TextUtils.isEmpty(eTag)) {
+                if(FileDownloadManager.debug){
+                    LG.i("记录网络文件ETag");
+                }
                 downloadRecord.seteTag(eTag);
-            } else if (!TextUtils.isEmpty(lastModified)) {
+            }else if (!TextUtils.isEmpty(lastModified)) {
+                if(FileDownloadManager.debug){
+                    LG.i("记录网络文件Last-Modified");
+                }
                 downloadRecord.setLastModified(lastModified);
-            } else {
+            }else {
                 downloadRecord.seteTag("");
                 downloadRecord.setLastModified("");
             }
@@ -451,6 +512,9 @@ public class DownloadInfo {
                     }
                 }
             } else {
+                if(FileDownloadManager.debug){
+                    LG.i("请求异常,状态码:"+responseCode);
+                }
                 DownloadHelper.close(httpURLConnection);
                 error();
                 return;
@@ -475,12 +539,20 @@ public class DownloadInfo {
         if (taskInfoList != null) {
             taskInfoList.clear();
         }
+
+        if(FileDownloadManager.debug){
+            if(threadNum<=1){
+                LG.i("准备单线程下载");
+            }else{
+                LG.i("准备多线程下载,线程数量:"+threadNum);
+            }
+        }
         for (int i = 0; i < threadNum; i++) {
             final DownloadRecord.FileRecord record = fileRecordList.get(i);
             long downloadLength = record.getDownloadLength();
 
             /*记录之前缓存的下载的进度*/
-            localCacheSize += downloadLength;
+//            localCacheSize += downloadLength;
             TaskInfo taskInfo = new TaskInfo(i, downloadConfig.getFileDownloadUrl(), record.getStartPoint(), downloadLength, record.getEndPoint(), downloadConfig.getTempSaveFile(), new TaskInfo.ReadStreamListener() {
                 @Override
                 public void readLength(long readLength) {
@@ -532,11 +604,19 @@ public class DownloadInfo {
             }
         }
         saveDownloadCacheInfo(downloadRecord);
+        if(FileDownloadManager.debug){
+            if(getDownloadConfig().getThreadNum()<=1){
+                LG.i("下载结束,准备修改文件名字");
+            }else{
+                LG.i("下载结束,准备合并文件");
+            }
+        }
         /*所有taskinfo下载完才是真的下载完*/
 //        downloadConfig.getTempSaveFile().renameTo(downloadConfig.getSaveFile());
         /*现在完成之后进行文件合并*/
+        int taskInfoSize = taskInfoList.size();
         boolean result = false;
-        if (taskInfoList.size() == 0) {
+        if (taskInfoSize == 1) {
             result = new File(downloadConfig.getTempSaveFile().getParent(), downloadConfig.getTempSaveFile().getName() + "0").renameTo(downloadConfig.getSaveFile());
         } else {
             FileOutputStream outputStream = null;
@@ -579,8 +659,11 @@ public class DownloadInfo {
             }
         }
         if (result) {
-            /*如果文件组合完成，则删除临时文件*/
-            deleteTempFile(downloadConfig.getTempSaveFile());
+            if (taskInfoSize > 1) {
+                /*如果是多线程下载*/
+                /*如果文件组合完成，则删除临时文件*/
+                deleteTempFile(downloadConfig.getTempSaveFile());
+            }
             success(downloadConfig.getSaveFile());
         } else {
             error();
@@ -651,6 +734,9 @@ public class DownloadInfo {
         if (downloadRecord == null) {
             return;
         }
+        if(FileDownloadManager.debug){
+            LG.i("保存下载记录到本地");
+        }
         DownloadHelper.get().saveRecord(downloadConfig.getDownloadSPName(), downloadRecord);
     }
 
@@ -666,9 +752,6 @@ public class DownloadInfo {
     }
 
     public void notifySaveRecord() {
-        if(FileDownloadManager.debug){
-            Log.i("=====","=====notifySaveRecord");
-        }
         saveDownloadCacheInfo(downloadRecord);
     }
 }
