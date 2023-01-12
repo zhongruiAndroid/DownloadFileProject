@@ -235,9 +235,8 @@ public class DownloadInfo {
     private Runnable saveCacheRunnable=new Runnable() {
         @Override
         public void run() {
-
-            notifySaveRecord();
             if(getStatus()==STATUS_PROGRESS){
+                notifySaveRecord();
                 DownloadHelper.get().getHandler().postDelayed(saveCacheRunnable,getDownloadConfig().getSaveFileTimeInterval());
             }
         }
@@ -419,7 +418,7 @@ public class DownloadInfo {
                     LG.i("存储空间不足");
                 }
                 //储存空间不足
-                error();
+                error(true);
                 return;
             }
             /*如果首次下载*/
@@ -525,7 +524,8 @@ public class DownloadInfo {
         } catch (Exception e) {
             DownloadHelper.close(httpURLConnection);
             e.printStackTrace();
-            error();
+            /*如果下载一部分，因为网络原因导致失败，然后再点击重试，无网络导致失败，此时不做删除缓存的动作*/
+            error(true);
         }
 
     }
@@ -723,10 +723,9 @@ public class DownloadInfo {
         for (TaskInfo info : taskInfoList) {
             info.changeStatus(STATUS_ERROR);
         }
-        /*如果因为网络原因下载失败，但是app没有切前后台，则手动保存下载进度*/
-        saveDownloadCacheInfo(downloadRecord);
-//        下载时不清理已部分下载的缓存
-//        error(true);
+//        下载时不清理已部分下载的缓存,但是需要更新下载状态
+        /*如果因为网络原因下载失败，保存下载进度*/
+        error(true);
     }
 
     /*边下载边保存当前下载进度*/
