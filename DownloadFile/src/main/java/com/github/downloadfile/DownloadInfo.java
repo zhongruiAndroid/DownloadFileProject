@@ -93,9 +93,6 @@ public class DownloadInfo {
 
     private void setStatus(int status) {
         this.status.set(status);
-        if(status==STATUS_PAUSE||status==STATUS_ERROR||status==STATUS_SUCCESS){
-            notifySaveRecord();
-        }
     }
 
     public int getStatus() {
@@ -163,7 +160,7 @@ public class DownloadInfo {
         }
         setStatus(STATUS_PAUSE);
         /*手动暂停时把内存的缓存信息保存至本地*/
-        saveDownloadCacheInfo(downloadRecord);
+        notifySaveRecord();
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -391,7 +388,7 @@ public class DownloadInfo {
             setStatus(STATUS_REQUEST);
             URL url = new URL(downloadConfig.getFileDownloadUrl());
             httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setConnectTimeout(30000);
+            httpURLConnection.setConnectTimeout(10000);
             httpURLConnection.setReadTimeout(30000);
             httpURLConnection.setRequestProperty("Range", "bytes=" + 0 + "-");
             httpURLConnection.connect();
@@ -603,7 +600,8 @@ public class DownloadInfo {
                 return;
             }
         }
-        saveDownloadCacheInfo(downloadRecord);
+        /*保存下载记录*/
+        notifySaveRecord();
         if(FileDownloadManager.debug){
             if(getDownloadConfig().getThreadNum()<=1){
                 LG.i("下载结束,准备修改文件名字");
