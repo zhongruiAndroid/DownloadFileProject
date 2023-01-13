@@ -46,10 +46,10 @@ public class FileDownloadManager {
     public static void deleteDownload(DownloadInfo downloadInfo){
         deleteDownload(downloadInfo,false);
     }
-    public static void deleteDownload(DownloadInfo downloadInfo,boolean deleteTaskAndFile){
+    public static void deleteDownload(DownloadInfo downloadInfo,boolean deleteFile){
         if(downloadInfo==null){
             return;
         }
-        downloadInfo.deleteDownload(deleteTaskAndFile);
+        downloadInfo.deleteDownload(deleteFile);
     }
 }
