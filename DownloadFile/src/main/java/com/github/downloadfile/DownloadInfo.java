@@ -299,7 +299,7 @@ public class DownloadInfo {
             }
             long timeInterval = nowTime - preTime;
             if (timeInterval >= 1000) {
-                float speedBySecond = (progress - tempDownloadSize) * 1000f / timeInterval;
+                final float speedBySecond = (progress - tempDownloadSize) * 1000f / timeInterval;
                 tempDownloadSize = progress;
                 preTime = nowTime;
                 DownloadHelper.get().getHandler().post(new Runnable() {
@@ -310,7 +310,7 @@ public class DownloadInfo {
                 });
             }
         }
-        long finalProgress = progress;
+        final long finalProgress = progress;
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
