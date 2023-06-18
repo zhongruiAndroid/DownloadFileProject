@@ -36,14 +36,15 @@ public class DownloadConfig implements Serializable {
     private long saveFileTimeInterval=5000;
 
     protected DownloadConfig(Builder builder) {
+        String fileDownloadUrl = builder.fileDownloadUrl;
+        if (TextUtils.isEmpty(fileDownloadUrl)) {
+            throw new IllegalStateException("please call setFileDownloadUrl() set downloadUrl");
+        }
         if (builder.saveFile == null) {
+            /*downloadFileSavePath自动生成，saveFile由开发者自行设置*/
             if (TextUtils.isEmpty(builder.downloadFileSavePath)) {
                 throw new IllegalStateException("please call setSaveFile() set filePath and fileName");
             } else {
-                String fileDownloadUrl = builder.fileDownloadUrl;
-                if (TextUtils.isEmpty(fileDownloadUrl)) {
-                    throw new IllegalStateException("please call setFileDownloadUrl() set downloadUrl");
-                }
                 /*防止url带有其他参数*/
                 fileDownloadUrl = fileDownloadUrl.split("\\?")[0];
                 int index = fileDownloadUrl.lastIndexOf(".");
@@ -57,7 +58,6 @@ public class DownloadConfig implements Serializable {
                 builder.setSaveFile(new File(builder.downloadFileSavePath, fileName));
             }
         } else {
-            String fileDownloadUrl = builder.fileDownloadUrl;
             /*防止url带有其他参数*/
             fileDownloadUrl = fileDownloadUrl.split("\\?")[0];
             if (builder.useSourceName && !TextUtils.isEmpty(fileDownloadUrl)) {
@@ -81,8 +81,10 @@ public class DownloadConfig implements Serializable {
         this.unionId = builder.unionId;
         this.needSpeed = builder.needSpeed;
         this.downloadBufferSize = builder.downloadBufferSize;
+        this.downloadSPName = builder.downloadSPName;
         this.threadNum = builder.threadNum;
         this.minFileSize = builder.minFileSize;
+        this.saveFileTimeInterval = builder.saveFileTimeInterval;
     }
 
     public static class Builder {
@@ -115,6 +117,9 @@ public class DownloadConfig implements Serializable {
 
         /*文件大小是多少时仅使用单线程下载*/
         private long minFileSize;
+
+        /*间隔多少秒保存下载记录*/
+        private long saveFileTimeInterval=5000;
 
         public Builder() {
             context = FileDownloadManager.getContext();
@@ -178,24 +183,38 @@ public class DownloadConfig implements Serializable {
         }
 
 
-        public void setUnionId(String unionId) {
+        public Builder setUnionId(String unionId) {
             this.unionId = unionId;
             if (TextUtils.isEmpty(unionId) && !TextUtils.isEmpty(fileDownloadUrl)) {
                 unionId = fileDownloadUrl.hashCode() + "";
             }
+            return this;
+        }
+
+
+        public Builder setDownloadBufferSize(int downloadBufferSize) {
+            this.downloadBufferSize = downloadBufferSize;
+            return this;
+        }
+
+        public Builder setDownloadSPName(String downloadSPName) {
+            this.downloadSPName = downloadSPName;
+            return this;
+        }
+
+        public Builder setMinFileSize(long minFileSize) {
+            this.minFileSize = minFileSize;
+            return this;
+        }
+
+        public Builder setSaveFileTimeInterval(long saveFileTimeInterval) {
+            this.saveFileTimeInterval = saveFileTimeInterval;
+            return this;
         }
 
         public DownloadConfig build() {
             DownloadConfig downloadConfig = new DownloadConfig(this);
             return downloadConfig;
-        }
-
-        public void setDownloadBufferSize(int downloadBufferSize) {
-            this.downloadBufferSize = downloadBufferSize;
-        }
-
-        public void setDownloadSPName(String downloadSPName) {
-            this.downloadSPName = downloadSPName;
         }
     }
 
@@ -275,6 +294,9 @@ public class DownloadConfig implements Serializable {
         build.needSpeed = this.needSpeed;
         build.downloadBufferSize = this.downloadBufferSize;
         build.downloadSPName = this.downloadSPName;
+        build.threadNum = this.threadNum;
+        build.minFileSize = this.minFileSize;
+        build.saveFileTimeInterval = this.saveFileTimeInterval;
         return build;
     }
 
@@ -292,9 +314,6 @@ public class DownloadConfig implements Serializable {
         return saveFileTimeInterval;
     }
 
-    public void setSaveFileTimeInterval(long saveFileTimeInterval) {
-        this.saveFileTimeInterval = saveFileTimeInterval;
-    }
 
     public static final int _20mb=1024*1024*20;
     public long getMinFileSize() {
