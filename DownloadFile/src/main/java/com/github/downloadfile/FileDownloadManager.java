@@ -21,7 +21,11 @@ public class FileDownloadManager {
         if(context!=null){
             return;
         }
-        context = ctx;
+        context = ctx.getApplicationContext();
+    }
+    public static void init(Context ctx,boolean isDebug) {
+        init(ctx);
+        setDebug(isDebug);
     }
 
     public static void setDebug(boolean debug) {
