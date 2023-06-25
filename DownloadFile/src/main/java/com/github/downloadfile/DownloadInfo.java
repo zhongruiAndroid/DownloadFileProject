@@ -334,6 +334,10 @@ public class DownloadInfo {
             getDownloadListener().onError();
         }
         String fileUrl = downloadConfig.getFileDownloadUrl();
+
+        if (FileDownloadManager.debug) {
+            LG.i("url下载地址:"+fileUrl);
+        }
         if (TextUtils.isEmpty(fileUrl)) {
             getDownloadListener().onError();
             return;
