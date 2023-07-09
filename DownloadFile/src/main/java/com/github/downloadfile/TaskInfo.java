@@ -13,7 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class TaskInfo implements Runnable {
-    public static final int _20mb=1024*1024*20;
+    public static int bufferSize=1024*1024*1;
     public interface ReadStreamListener {
         void readLength(long readLength);
 
@@ -131,7 +131,8 @@ public class TaskInfo implements Runnable {
                 }
                 inputStream = httpURLConnection.getInputStream();
 
-                byte[] buff = new byte[_20mb];
+                byte[] buff = new byte[bufferSize];
+
                 int len = 0;
                 bis = new BufferedInputStream(inputStream);
                 randomAccessFile = new RandomAccessFile(saveFile, "rw");

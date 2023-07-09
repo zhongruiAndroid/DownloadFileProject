@@ -571,6 +571,10 @@ public class DownloadInfo {
 
     /*开始准备下载*/
     private void prepareDownload() {
+        int statusTemp = getStatus();
+        if(statusTemp==STATUS_PAUSE||statusTemp==STATUS_DELETE){
+            return;
+        }
         List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
 
         int threadNum = downloadConfig.getThreadNum();
@@ -630,7 +634,7 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().postDelayed(saveCacheRunnable, getDownloadConfig().getSaveFileTimeInterval());
     }
 
-    public static final int _50mb = 1024 * 1024 * 50;
+    public static int bufferSize = 1024 * 1024 * 2;
 
     private void checkOtherTaskInfoIsComplete() {
         if (taskInfoList == null) {
@@ -670,7 +674,7 @@ public class DownloadInfo {
                     /*每个task下载的临时文件*/
                     tempFile = new File(downloadConfig.getTempSaveFile().getAbsolutePath() + i);
 
-                    byte[] buff = new byte[_50mb];
+                    byte[] buff = new byte[bufferSize];
                     int len = 0;
 
                     fileInputStream = new FileInputStream(tempFile);
