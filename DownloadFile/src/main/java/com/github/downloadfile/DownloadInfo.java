@@ -1,7 +1,6 @@
 package com.github.downloadfile;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.github.downloadfile.bean.DownloadRecord;
 import com.github.downloadfile.helper.DownloadHelper;
@@ -46,46 +45,9 @@ public class DownloadInfo {
     }
 
 
-    public FileDownloadListener getDownloadListener() {
-        if (downloadListener == null) {
-            downloadListener = new FileDownloadListener() {
-                @Override
-                public void onConnect(long totalSize) {
 
-                }
-
-                @Override
-                public void onSpeed(float speedBySecond) {
-
-                }
-
-                @Override
-                public void onProgress(long progress, long totalSize) {
-
-                }
-
-                @Override
-                public void onSuccess(File file) {
-
-                }
-
-                @Override
-                public void onPause() {
-
-                }
-
-                @Override
-                public void onDelete() {
-
-                }
-
-                @Override
-                public void onError() {
-
-                }
-            };
-        }
-        return downloadListener;
+    public void setDownloadListener(FileDownloadListener downloadListener) {
+        this.downloadListener = downloadListener;
     }
 
     private void setStatus(int status) {
@@ -146,7 +108,10 @@ public class DownloadInfo {
         }
         changeStatus(STATUS_DELETE);
     }
-
+    public void release(){
+        pauseDownload();
+        downloadListener=null;
+    }
     private void changeStatus(int changeStatus) {
         if (taskInfoList == null) {
             return;
@@ -185,7 +150,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onError();
+                if (downloadListener != null) {
+                    downloadListener.onError();
+                }
             }
         });
     }
@@ -201,7 +168,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onPause();
+                if (downloadListener != null) {
+                    downloadListener.onPause();
+                }
             }
         });
     }
@@ -215,7 +184,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onDelete();
+                if (downloadListener != null) {
+                    downloadListener.onDelete();
+                }
             }
         });
     }
@@ -232,7 +203,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onSuccess(file);
+                if (downloadListener != null) {
+                    downloadListener.onSuccess(file);
+                }
             }
         });
     }
@@ -247,7 +220,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-                getDownloadListener().onConnect(totalSize);
+                if (downloadListener != null) {
+                    downloadListener.onConnect(totalSize);
+                }
             }
         });
     }
@@ -305,7 +280,9 @@ public class DownloadInfo {
                 DownloadHelper.get().getHandler().post(new Runnable() {
                     @Override
                     public void run() {
-                        getDownloadListener().onSpeed(Float.parseFloat(String.format("%.1f", speedBySecond)));
+                        if (downloadListener != null) {
+                            downloadListener.onSpeed(Float.parseFloat(String.format("%.1f", speedBySecond)));
+                        }
                     }
                 });
             }
@@ -314,8 +291,9 @@ public class DownloadInfo {
         DownloadHelper.get().getHandler().post(new Runnable() {
             @Override
             public void run() {
-//                getDownloadListener().onProgress(progress + localCacheSize, totalSize);
-                getDownloadListener().onProgress(finalProgress, totalSize);
+                if (downloadListener != null) {
+                    downloadListener.onProgress(finalProgress, totalSize);
+                }
             }
         });
     }
@@ -331,7 +309,9 @@ public class DownloadInfo {
 
     public void download() {
         if (downloadConfig == null) {
-            getDownloadListener().onError();
+            if (downloadListener != null) {
+                downloadListener.onError();
+            }
         }
         String fileUrl = downloadConfig.getFileDownloadUrl();
 
@@ -339,7 +319,9 @@ public class DownloadInfo {
             LG.i("url下载地址:"+fileUrl);
         }
         if (TextUtils.isEmpty(fileUrl)) {
-            getDownloadListener().onError();
+            if (downloadListener != null) {
+                downloadListener.onError();
+            }
             return;
         }
         if (getStatus() == STATUS_CONNECT || getStatus() == STATUS_PROGRESS || getStatus() == STATUS_REQUEST) {
