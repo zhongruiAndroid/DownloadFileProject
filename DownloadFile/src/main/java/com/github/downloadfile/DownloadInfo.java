@@ -559,7 +559,9 @@ public class DownloadInfo {
         }
         List<DownloadRecord.FileRecord> fileRecordList = downloadRecord.getFileRecordList();
 
-        int threadNum = downloadConfig.getThreadNum();
+        int threadNum = fileRecordList.size();
+        /*如果已有的下载记录和设置的下载线程数量不一样，以缓存记录为准*/
+        downloadConfig.setThreadNum(threadNum);
         setStatus(STATUS_PROGRESS);
         if (taskInfoList != null) {
             taskInfoList.clear();

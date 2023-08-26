@@ -306,6 +306,12 @@ public class DownloadConfig implements Serializable {
         }
         return threadNum;
     }
+    protected void setThreadNum(int threadNum){
+        if(threadNum<=0){
+            return;
+        }
+        this.threadNum=threadNum;
+    }
 
     public long getSaveFileTimeInterval() {
         if(saveFileTimeInterval<=1000){
